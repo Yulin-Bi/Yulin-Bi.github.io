@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
   
-  <meta name="robots" content="noindex,follow">
+  
   <meta name="generator" content="Hexo 8.1.2">
   <meta http-equiv='x-dns-prefetch-control' content='on' />
   
@@ -17,22 +17,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
-  <title>归档 - lin的博客</title>
+  <title>RocketMQ 知识点整理 - lin的博客</title>
 
   
-    <meta name="description" content="知识分享和个人记录">
-<meta property="og:type" content="website">
-<meta property="og:title" content="归档">
-<meta property="og:url" content="http://example.com/archives/2026/05/">
+    <meta name="description" content="为什么要用MQ？ 应用解耦  假设有支付、订单、短信三个服务，当有一笔订单需要调用这三个服务时，需要在代码中写死这三个服务的调用接口，如果需要新增一个新的服务积分服务，又要在代码中新增调用接口，耦合度太高，不利于管理 此时引入RocketMQ，通过发布不同的topic，需要的服务只需要订阅它就可以了，这样一来，生产者不需要知道我需要调用哪些接口，只管发送消息即可。未来再需要新增服务的时候，只需要在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ 知识点整理">
+<meta property="og:url" content="http://example.com/2026/06/07/RocketMq/">
 <meta property="og:site_name" content="lin的博客">
-<meta property="og:description" content="知识分享和个人记录">
+<meta property="og:description" content="为什么要用MQ？ 应用解耦  假设有支付、订单、短信三个服务，当有一笔订单需要调用这三个服务时，需要在代码中写死这三个服务的调用接口，如果需要新增一个新的服务积分服务，又要在代码中新增调用接口，耦合度太高，不利于管理 此时引入RocketMQ，通过发布不同的topic，需要的服务只需要订阅它就可以了，这样一来，生产者不需要知道我需要调用哪些接口，只管发送消息即可。未来再需要新增服务的时候，只需要在">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210910138.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210913142.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210913371.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210930894.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512041328794.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512041434221.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512050925454.png">
+<meta property="og:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512050927324.png">
+<meta property="article:published_time" content="2026-06-07T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-07T06:01:45.289Z">
 <meta property="article:author" content="kiralinn">
+<meta property="article:tag" content="八股">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210910138.png">
   
   
   
-  
+  <meta name="keywords" content="八股">
 
   <!-- feed -->
   
@@ -44,10 +56,10 @@
 
   
 
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Website","@id":"http://example.com","author":{"@type":"Person","name":"kiralinn","sameAs":[]},"name":"lin的博客","description":"知识分享和个人记录","url":"http://example.com"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"kiralinn","sameAs":[]},"dateCreated":"2026-06-07T12:00:00+08:00","dateModified":"2026-06-07T14:01:45+08:00","datePublished":"2026-06-07T12:00:00+08:00","description":"","headline":"RocketMQ 知识点整理","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/06/07/RocketMq/"},"publisher":{"@type":"Organization","name":"kiralinn","sameAs":[]},"url":"http://example.com/2026/06/07/RocketMq/","keywords":"八股","image":[]}</script>
   
 </head>
-<body><div id="l_cover"></div><div class="l_body index" id="start" layout="undefined" type="undefined" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+<body><div id="l_cover"></div><div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
 
 
 <header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/01.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">lin的博客</div></a></div></header>
@@ -59,20 +71,310 @@
 <div class="widgets">
 <div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
 
+
+
 <widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2026/06/07/RocketMq/"><span class="title">RocketMQ 知识点整理</span></a><a class="item title" href="/2026/05/26/hello-world/"><span class="title">第一篇博客</span></a></div></widget>
 </div>
 <footer class="footer dis-select"><div class="social-wrap"><a class="social" href="/" rel="noopener noreferrer"><img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/></a></div></footer>
 </div></aside><div class="l_main" id="main">
 
-<header class="header mobile-only"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/01.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">lin的博客</div></a></div></header>
-
- 
 
 
-<div class="navbar top"><div class="navbar-blur"><div class="navbar-container"><nav class="post"><a href="/">近期发布</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a class="active" href="/archives/">归档</a><a href="/resume/">个人简历</a></nav></div></div></div><div class="post-list archives"><article class="" id="archive"><div class='archive-header h4'>2026</div><div class="archive-list"><a class='post fs14' href="/2026/06/07/RocketMq/"><time>06-07</time><span>RocketMQ 知识点整理</span></a></div><div class="archive-list"><a class='post fs14' href="/2026/05/26/hello-world/"><time>05-26</time><span>第一篇博客</span></a></div></article></div>
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-06-07T04:00:00.000Z">2026-06-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-06-07T06:01:45.289Z">2026-06-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>RocketMQ 知识点整理</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h2 id="为什么要用MQ？"><a href="#为什么要用MQ？" class="headerlink" title="为什么要用MQ？"></a>为什么要用MQ？</h2><ol>
+<li><strong>应用解耦</strong></li>
+</ol>
+<p>假设有支付、订单、短信三个服务，当有一笔订单需要调用这三个服务时，需要在代码中写死这三个服务的调用接口，如果需要新增一个新的服务积分服务，又要在代码中新增调用接口，耦合度太高，不利于管理</p>
+<p>此时引入RocketMQ，通过发布不同的topic，需要的服务只需要订阅它就可以了，这样一来，生产者不需要知道我需要调用哪些接口，只管发送消息即可。未来再需要新增服务的时候，只需要在这个服务中订阅消息就可以了。扩展性提高，维护成本降低</p>
+<blockquote>
+<p><strong>生产者不再直接调用多个下游服务，只负责发消息；</strong><br><strong>谁想处理这条消息，就订阅对应的 Topic。</strong><br><strong>新增&#x2F;删除下游服务不需要修改生产者代码。</strong></p>
+</blockquote>
+<ol start="2">
+<li><strong>异步提速</strong></li>
+</ol>
+<p>假设生产者向RocketMQ中发送一条用户下单的消息需要 50ms，生产者向数据库中发送一条消息需要 50ms，支付、订单、短信三个服务接收消息后处理需要 200ms</p>
+<p>那么用户得到反馈的时间是多少呢？ 50ms + 50ms &#x3D; 100ms ，前端只需要将消息发送成功，数据库消息写入成功后就可以返回了，后端服务异步处理消息就行了，减少用户等待的时间</p>
+<blockquote>
+<p><strong>把耗时操作（发短信、扣库存、记积分）交给 MQ 异步执行，主流程只做核心步骤，然后立刻返回用户。</strong></p>
+</blockquote>
+<ol start="3">
+<li><strong>削峰填谷</strong></li>
+</ol>
+<p>在订单高峰期可能达到 10万&#x2F;s 的qps，使用RocketMQ可以将这些消息存入消息队列中，再通过后端服务依次处理，将高峰期挤压的消息按照匀给其他时间处理，可以提高系统稳定性</p>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210910138.png" alt="image-20251121090958962"></p>
+<blockquote>
+<p><strong>高峰期把 10 万 QPS 的请求写入 MQ，后端以自身处理能力匀速消费。</strong></p>
+</blockquote>
+<hr>
+<h2 id="Rocket-MQ的优点"><a href="#Rocket-MQ的优点" class="headerlink" title="Rocket-MQ的优点"></a>Rocket-MQ的优点</h2><ol>
+<li><strong>开发语言</strong>：Rocket-MQ使用Java开发，更容易上手阅读体验和受众</li>
+<li><strong>社区氛围活跃</strong>：RocketMQ是阿里巴巴开源且内部在大量使用的消息队列，说明RocketMQ是经得起考验的，能够针对线上复杂环境的需求场景提供相应的解决方案</li>
+<li><strong>特性丰富</strong>：根据RocketMQ官方文档的举例，其高级特性达到了12种，比如顺序消息、事务消息、定时消息等；能够在复杂的业务下尽可能多的提供思路及解决方案</li>
+</ol>
+<hr>
+<h2 id="RocketMQ组件"><a href="#RocketMQ组件" class="headerlink" title="RocketMQ组件"></a>RocketMQ组件</h2><p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210913142.png" alt="image-20251121091323745"></p>
+<p><strong>生产者、Topic、消费者之间的关系</strong></p>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210913371.png" alt="image-20251121091355383"></p>
+<ol>
+<li><strong>生产者：消息的发送方，负责指定主题向MQ发送消息</strong></li>
+</ol>
+<p>生产者如何将消息发送给broker？生产者需要指定topic，和NameServer建立一个tcp长连接，拉取最新的路由信息；通过路由信息找到自己要投递信息的topic分布在哪几台broker上，根据负载均衡向broker发送信息</p>
+<hr>
+<ol start="2">
+<li><strong>消费者：消息的接收方，从主题订阅消息并消费</strong></li>
+</ol>
+<p>消费者组是一个具有相同消费逻辑的集合，一个主题可以由多个消费者组进行订阅和消费，作用是实现负载均衡和容错能力</p>
+<p>拉取消息时，消费者可能拉主也可能拉从，根据负载决定</p>
+<hr>
+<ol start="3">
+<li><strong>Broker：MQ的中间件，负责存储和转发</strong></li>
+</ol>
+<p>一个Broker中可以有多个topic</p>
+<p><strong>心跳机制</strong>：</p>
+<p>消费者必须每隔30s向Broker发送心跳，如果Broker在120s没有接收到心跳，就会将这个消费者踢出消费者组</p>
+<p>生产者非必须可以暂时不发送心跳</p>
+<hr>
+<ol start="4">
+<li><strong>NameServer：管理维护</strong></li>
+</ol>
+<p>NameServer 完全是 <strong>独立的多个节点</strong></p>
+<p><strong>管理</strong>：生产者、Broker、消费者都需要向NameServer进行注册；生产者通过NameServer知道，自己的topic需要发送到哪一个Broker中；消费者通过NameServer知道，从哪一个Broker中订阅Topic消息</p>
+<p><strong>心跳机制</strong>：只有Broker每隔30s就会向NameServer发送一次心跳；如果超出时间没有发送，该节点就会被移除，不再参与MQ的任何事件；当心跳恢复后，NameServer会将该节点加入MQ中参与事件</p>
+<p>心跳包含什么？</p>
+<hr>
+<ol start="5">
+<li><strong>messageQueue：消息的存储单元</strong></li>
+</ol>
+<hr>
+<h2 id="消息模型"><a href="#消息模型" class="headerlink" title="消息模型"></a>消息模型</h2><h3 id="消息发送模式"><a href="#消息发送模式" class="headerlink" title="消息发送模式"></a>消息发送模式</h3><ol>
+<li><strong>同步发送</strong></li>
+</ol>
+<p>生产者发送消息后会阻塞当前线程，等待Broker返回结果，只有收到ack确认，才表示消息发送成功</p>
+<p>优点：可靠性高；缺点：吞吐量低</p>
+<p>使用场景：交易信息，核心订单创建，保证消息发送成功</p>
+<ol start="2">
+<li><strong>异步发送</strong></li>
+</ol>
+<p>生产者发送消息后，立即返回，不会阻塞，Broker返回结果时会异步回调用户提供的回调函数</p>
+<p>优点：吞吐量高；缺点：需要实现回调接口，消息无法保证成功</p>
+<p>使用场景：能接受消息丢失，关注速度</p>
+<ol start="3">
+<li><strong>单向发送</strong></li>
+</ol>
+<p>生产者发送消息后，立即返回，不关心发送结果</p>
+<p>优点：吞吐量高；缺点：不知道消息是否发送成功，可靠性低</p>
+<p>使用场景：日志收集</p>
+<hr>
+<h3 id="消费模式"><a href="#消费模式" class="headerlink" title="消费模式"></a>消费模式</h3><ol>
+<li><strong>消费方式</strong></li>
+</ol>
+<p>pull：消费者不断检查消息是否发送，如果有了就将消息拉回来</p>
+<p>push：消费者提供一个监视器来监视消费者消费的topic，当生产者发送消息到Broker，会立即将该消息推送到消费者</p>
+<p><strong>优缺点</strong></p>
+<ol start="2">
+<li><strong>消息分发</strong></li>
+</ol>
+<p><strong>集群</strong>：一条消息在一个组里只处理一次</p>
+<p><strong>广播</strong>：一条消息在一个组里每个实例都处理一次</p>
+<hr>
+<h3 id="消费机制"><a href="#消费机制" class="headerlink" title="消费机制"></a>消费机制</h3><ol>
+<li><strong>顺序消费</strong></li>
+</ol>
+<p><strong>场景</strong>：需要保证创建订单 -&gt; 支付订单 -&gt; 发货 -&gt; 确认收货，这些消息必须按顺序处理</p>
+<p>实现</p>
+<blockquote>
+<p><strong>实际上RocketMQ提供了这样的方法</strong></p>
+<p><strong>Producer：</strong> 用 <code>MessageQueueSelector</code> 按业务键（比如 orderId）取余，把同一业务键消息路由到同一 <code>MessageQueue</code>。</p>
+<p><strong>Consumer：</strong> 开启顺序消费：<code>registerMessageListener(MessageListenerOrderly)</code>（或 Spring <code>consumeMode=ORDERLY</code>）。</p>
+<p><strong>RocketMQ 保证：</strong> 集群下同一队列会被锁定给一个 consumer 实例，并在实例内对该队列串行处理，所以队列内天然 FIFO。</p>
+</blockquote>
+<ol start="2">
+<li><strong>延迟消费</strong></li>
+</ol>
+<p>消息发送给Broker后不会立即处理，而是经过一个等待时间再发送给消费者，消费者是无感的</p>
+<p>场景：每天5点执行文件清理，每隔2分钟触发一次消息推送等需求</p>
+<p>实现：生产者设置message.setDelayTimeLevel(3)指定延迟级别为3; 之后Broker会将消息转移到延迟的Topic中，根据延迟级别存入特定队列，时间到了才会投递到目标Topic中</p>
+<p>个数：<strong>18个</strong></p>
+<ol start="3">
+<li><strong>批量消费</strong></li>
+</ol>
+<p>消费者一次拉取处理多条消息，性能提升很大，但如果某条消息处理失败，需要整批消息一起重试</p>
+<p>场景：日志收集和处理，数据同步迁移</p>
+<p>实现：生产者使用 producer.send(Collection msgs); 方法批量发送消息；消费者实现 MessageListenerBatchly 接口或使用 DefaultMQPushConsumerBatch 来消费批量消息。消费者可以设置 consumerMessageBatchMaxSize参数来控制单次拉取的最大消息条数</p>
+<ol start="4">
+<li><strong>事务消息</strong></li>
+</ol>
+<p><strong>把 RocketMQ 里的“发消息”这件事，和你本地数据库事务绑在一起，要么都成功，要么都失败</strong>，避免出现“DB 成功了，但消息没发出去 &#x2F; 多发一次”的操作。</p>
+<p>实现：见【<strong>怎么实现分布式消息事务的？半消息？</strong>】</p>
+<hr>
+<h2 id="RocketMQ怎么实现延迟消费？"><a href="#RocketMQ怎么实现延迟消费？" class="headerlink" title="RocketMQ怎么实现延迟消费？"></a>RocketMQ怎么实现延迟消费？</h2><p>消息先发到 Broker，但不是马上被消费者看到，而是等一段时间后再投递给真正的业务 Topic，让消费者正常消费。</p>
+<p>RocketMQ 的延迟消息是通过一个内部延迟 Topic（<code>SCHEDULE_TOPIC_XXXX</code>）和延迟级别（delayLevel）来实现的。消息先进入延迟队列，Broker 的定时扫描线程会在延迟时间到了后，重新投递到真实 Topic，消费者才会看到。</p>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202511210930894.png" alt="image-20251121093023514"></p>
+<hr>
+<h2 id="指数退避"><a href="#指数退避" class="headerlink" title="指数退避"></a>指数退避</h2><p>指数退避是一种重试策略，每次重试失败后等待时间按指数级增长，比如 1s、2s、4s、8s、16s，而不是固定间隔反复重试。</p>
+<p>这样可以在对端服务异常或高负载时，避免大量请求短时间内反复冲击，降低雪崩风险。实际工程里一般还会在基础的指数退避上增加随机抖动，把不同客户端的重试时间打散</p>
+<hr>
+<h2 id="RocketMQ如何保证消息的可用性-可靠性-不丢失呢？"><a href="#RocketMQ如何保证消息的可用性-可靠性-不丢失呢？" class="headerlink" title="RocketMQ如何保证消息的可用性&#x2F;可靠性&#x2F;不丢失呢？"></a>RocketMQ如何保证消息的可用性&#x2F;可靠性&#x2F;不丢失呢？</h2><p>消息可能在这三个阶段发生丢失：生产阶段、存储阶段、消费阶段</p>
+<blockquote>
+<p>【<strong>生产阶段</strong>】</p>
+<p>Producer自己发送失败，解决方法：<strong>同步发送（不使用单向发送） + 重试机制</strong>（默认2次重试）</p>
+<p>同步发送中：</p>
+</blockquote>
+<blockquote>
+<p>【<strong>存储阶段</strong>】</p>
+<p>消息存储到Broker有<strong>两种刷盘方式</strong>：</p>
+<ol>
+<li>同步刷盘（最可靠）</li>
+</ol>
+<p>只有磁盘真正写成功之后才算发送成功</p>
+<p>优点：绝对可靠；缺点：慢</p>
+<ol start="2">
+<li>异步刷盘</li>
+</ol>
+<p>如果 Broker 突然宕机，可能丢最近几十毫秒的数据。</p>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512041328794.png" alt="image-20251204132805273"></p>
+<p>Broker 的<strong>两种复制机制</strong></p>
+<ol>
+<li>同步复制</li>
+</ol>
+<p>消息必须 <strong>Master 和 Slave 都写成功</strong> 才算成功，同步复制模式可以保证即使Master宕机，消息肯定在Slave中有备份，保证了消息不回丢失。</p>
+<ol start="2">
+<li>异步复制</li>
+</ol>
+<p>Master 写完消息立即返回成功，不等待 Slave 写入。</p>
+<p>【<strong>结论</strong>】：真正不丢消息的方式，使用同步刷盘，同步复制</p>
+</blockquote>
+<blockquote>
+<p>【<strong>消费阶段</strong>】</p>
+<p>Consumer保证消息成功消费的关键在于确认的时机，不要在收到消息后就立即发送消费确认，而是应该在执行完所有消费业务逻辑之后，再发送消费确认。因为消息队列维护了消费的位置，逻辑执行失败了，没有确认，再去队列拉取消息，就还是之前的一条。</p>
+</blockquote>
+<hr>
+<h2 id="如何解决重复消费消息的情况？"><a href="#如何解决重复消费消息的情况？" class="headerlink" title="如何解决重复消费消息的情况？"></a>如何解决重复消费消息的情况？</h2><p>RocketMQ只能确保至少一次发送，保证了消息不丢失，但是可能造成消息重复消费。处理消息重复消费的问题，我们只能在Consumer，也就是业务端处理，主要使用的是幂等操作。有一下两种幂等操作，Redis、数据库唯一键</p>
+<ol>
+<li><strong>Redis</strong></li>
+</ol>
+<p>消费消息时执行<code>SETNX messageId 1</code>：仅当键 <code>messageId</code> 不存在时，才将其值设为 1；如果 <code>messageId</code> 已存在，则不做任何操作。</p>
+<p>如果这个命令返回0说明<code>messageId</code>存在，已经处理</p>
+<p>返回1表示<code>messageId</code>不存在，是第一次处理，可以执行业务逻辑</p>
+<p><strong>优点：性能快，不会入侵业务表结构，使用简单</strong></p>
+<p><strong>缺点：Redis数据会过期，不能做永久幂等；Redis会丢失数据导致幂等失败</strong></p>
+<hr>
+<ol start="2">
+<li><strong>数据库唯一键</strong></li>
+</ol>
+<p>比如在处理订单支付回调时：</p>
+<p>重复插入直接报错，程序捕获后忽略即可。</p>
+<p>这是经常使用的幂等操作，真正强幂等只可能落在数据库中。</p>
+<p><strong>优点：持久可靠，绝对不会重复执行</strong></p>
+<p><strong>缺点：需要一张日志表，写库操作相比较于Redis慢</strong></p>
+<hr>
+<h2 id="如何解决消息积压问题？"><a href="#如何解决消息积压问题？" class="headerlink" title="如何解决消息积压问题？"></a>如何解决消息积压问题？</h2><p>一般来说，消息积压本质上是<strong>消费速度跟不上生产速度</strong>，大多是消费者处理不及时导致的。</p>
+<p>解决时从消费端入手</p>
+<hr>
+<h2 id="如何实现消息过滤？"><a href="#如何实现消息过滤？" class="headerlink" title="如何实现消息过滤？"></a>如何实现消息过滤？</h2><p>有两种方案：</p>
+<ol>
+<li>一种是在 Broker 端按照 Consumer 的去重逻辑进行过滤，这样做的好处是避免了无用的消息传输到 Consumer 端，缺点是加重了 Broker 的负担，实现起来相对复杂。</li>
+<li>另一种是在 Consumer 端过滤，比如按照消息设置的 tag 去重，这样的好处是实现起来简单，缺点是有大量无用的消息到达了 Consumer 端只能丢弃不处理。</li>
+</ol>
+<p>一般采用Cosumer端过滤，如果希望提高吞吐量，可以采用Broker过滤。</p>
+<hr>
+<h2 id="怎么实现分布式消息事务的？半消息？"><a href="#怎么实现分布式消息事务的？半消息？" class="headerlink" title="怎么实现分布式消息事务的？半消息？"></a>怎么实现分布式消息事务的？半消息？</h2><p>在 RocketMQ 里，分布式消息事务是通过 <strong>半消息 + 本地事务 + 事务回查</strong> 来实现的。<br>具体流程是：</p>
+<ol>
+<li>Producer 先发送一条 <strong>半消息</strong> 到 Broker，这条消息已经持久化，但对消费者不可见；</li>
+<li>半消息发送成功后，Producer 执行本地事务，比如写订单库；</li>
+<li>本地事务成功则向 Broker 发送 <strong>Commit</strong>，Broker 会把这条半消息转成正常消息投递给消费者；如果本地事务失败则发送 <strong>Rollback</strong>，Broker 会丢弃这条半消息；</li>
+<li>对于长时间未提交的半消息，Broker 会定时发起 <strong>事务回查</strong>，让 Producer 根据本地事务状态返回 Commit 或 Rollback，从而保证最终一致性。</li>
+<li>这样可以保证“本地事务”和“消息发送”要么都成功，要么都失败，避免数据不一致。</li>
+</ol>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512041434221.png" alt="image-20251204143435868"></p>
+<h2 id="死信队列（DLQ）是什么？"><a href="#死信队列（DLQ）是什么？" class="headerlink" title="死信队列（DLQ）是什么？"></a>死信队列（DLQ）是什么？</h2><p><strong>死信队列：Dead-Letter Queue</strong></p>
+<p>当一条消息：</p>
+<p>RocketMQ 不会让这条消息一直卡在正常队列里影响其他消息消费，而是：</p>
+<p>👉 <strong>把它移到这个专门的“死信队列 DLQ”里隔离起来。</strong></p>
+<p>这样的目的有两个：</p>
+<ol>
+<li>把有问题的消息从正常队列里隔离出来，避免继续<strong>重试占用资源</strong>、阻塞正常消息；</li>
+<li>保留这些失败消息，方便运维和开发后续<strong>排查问题</strong>、手工修复数据，必要时还能对死信队列中的消息进行人工补偿或重放，而不是直接丢失。</li>
+</ol>
+<hr>
+<h2 id="如何保证RocketMQ的高可用？"><a href="#如何保证RocketMQ的高可用？" class="headerlink" title="如何保证RocketMQ的高可用？"></a>如何保证RocketMQ的高可用？</h2><ol>
+<li><strong>NameServer高可用</strong></li>
+</ol>
+<p>NameServer 是无状态的，可以部署多个实例。Broker 会定时向所有 NameServer 上报路由信息，客户端可以连接任意 NameServer，因此 NameServer 本身不存在单点故障问题，当某一个NameServer挂掉后，其余的NameServer任然可以使用</p>
+<ol start="2">
+<li><strong>Broker高可用</strong></li>
+</ol>
+<p>Broker 可以采用 Master–Slave 模式部署，Slave 通过同步或异步复制跟随 Master。当 Master 故障时，可以人工切换到 Slave，或者使用 DLedger 支持自动选主，实现更强的一致性和可用性。</p>
+<blockquote>
+<p>（<strong>了解</strong>）DLedger 是 <strong>Distributed Ledger（分布式账本）</strong> 的缩写，是由阿里巴巴开源的一款<strong>轻量级、高性能的分布式日志存储与共识组件</strong>，核心定位是为分布式系统提供<strong>高可靠、强一致的日志存储</strong>，同时内置成熟的 Raft 共识算法实现，解决分布式场景下的日志复制、选主、数据一致性问题。</p>
+</blockquote>
+<ol start="3">
+<li><strong>Consumer 高可用</strong></li>
+</ol>
+<p>Consumer 以集群模式消费，一个 consumer group 下可以部署多个实例（服务器），RocketMQ 会对队列做队列重新分配（Rebalance），当某个实例故障时，其队列会被分配给其他实例（服务器）继续消费，从而保证消费端高可用。</p>
+<hr>
+<h2 id="为什么RocketMQ不使用Zookeeper作为注册中心呢？"><a href="#为什么RocketMQ不使用Zookeeper作为注册中心呢？" class="headerlink" title="为什么RocketMQ不使用Zookeeper作为注册中心呢？"></a>为什么RocketMQ不使用Zookeeper作为注册中心呢？</h2><hr>
+<h2 id="Broker是怎么保存数据的呢？"><a href="#Broker是怎么保存数据的呢？" class="headerlink" title="Broker是怎么保存数据的呢？"></a>Broker是怎么保存数据的呢？</h2><p>RocketMQ 的存储是基于：</p>
+<p>Broker 上来的消息，<strong>不管哪个 Topic、哪个队列</strong>，统统<strong>按到达顺序</strong>写进 CommitLog，CommitLog 是一组<strong>固定大小的大文件</strong>（比如每个 1GB，写满了就滚动下一个），写入模式：<strong>追加写（append）</strong>，不做随机修改</p>
+<p>Consumer 是按 <strong>Topic + 队列</strong> 来拉消息的，如果只靠 CommitLog 这一条大日志，每次消费需要从文件头扫描到文件尾才能找到数据，于是RocketMQ又搞了一个逻辑结构：<strong>ConsumeQueue</strong>，它按照<code>Topic + queueId</code>维度拆分</p>
+<p>比如：<code>TopicA-Queue0</code> 有一个 ConsumeQueue 文件；<code>TopicA-Queue1</code> 又是一个</p>
+<p>ConsumeQueue就像是记录：这个队列的第 N 条消息，在 CommitLog 的 xx 位置，长度是 xx</p>
+<p>如果只想查找Topic中某一个消息，通过IndexFile可以将key -&gt; CommitLog offset映射起来</p>
+<p>.</p>
+<p>【<strong>总结</strong>】：Broker 把所有消息<strong>顺序</strong>写到一条大日志里（CommitLog），再用 ConsumeQueue 给每个 Topic&#x2F;Queue 建“索引”，核心消费流程还是 CommitLog + ConsumeQueue，有需要的话再用 IndexFile 做按 key 查找。</p>
+<hr>
+<h2 id="说说RocketMQ怎么对文件进行读写的？"><a href="#说说RocketMQ怎么对文件进行读写的？" class="headerlink" title="说说RocketMQ怎么对文件进行读写的？"></a>说说RocketMQ怎么对文件进行读写的？</h2><p>RocketMQ对文件的读写巧妙地利用了操作系统的一些高效文件读写方式——<code>PageCache</code>、<code>顺序读写</code>、<code>零拷贝</code>。</p>
+<ol>
+<li>PageCache + 顺序写入：写几乎和写内存一样快</li>
+</ol>
+<p>RocketMQ 写 CommitLog 时采用<strong>顺序追加</strong>，操作系统会把数据先写入 PageCache，然后后台<strong>异步</strong>刷盘，因此写入性能接近内存速度。</p>
+<p>读取 ConsumeQueue（逻辑队列）时也是顺序访问，PageCache 的<strong>预读机制</strong>可以让读取基本命中内存，即使消息积压也不会影响性能。</p>
+<ol start="2">
+<li>随机读优化：CommitLog 的读取依赖 PageCache + IO 调度</li>
+</ol>
+<p>CommitLog 读取是随机访问，但如果磁盘使用 SSD 并配合 Deadline 调度算法，可以显著降低随机读延迟。</p>
+<ol start="3">
+<li>零拷贝（mmap）：把文件“变成内存”直接读写</li>
+</ol>
+<p>在传统的方式中，操作系统将数据从磁盘文件发送到网卡，需要经历<code>文件 → 内核态 → 用户态 → 内核态 → 网卡</code></p>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512050925454.png" alt="image-20251205092551320"></p>
+<p>可以通过零拷贝的方式，减少用户态与内核态的上下文切换和内存拷贝的次数，用来提升I&#x2F;O的性能。零拷贝比较常见的实现方式是<strong>mmap</strong>，这种机制在Java中是通过MappedByteBuffer实现的，就可以将它经历优化为<code>文件 → 内核态 → 网卡</code></p>
+<p><img src="https://jasonqianpic.oss-cn-chengdu.aliyuncs.com/img/202512050927324.png" alt="image-20251205092735268"></p>
+<h2 id="RocketMQ消息长轮询了解吗？"><a href="#RocketMQ消息长轮询了解吗？" class="headerlink" title="RocketMQ消息长轮询了解吗？"></a>RocketMQ消息长轮询了解吗？</h2><p>所谓的长轮询，就是消费者pull拉消息的时候，Broker检查是否有消息，如果没有消息就挂起PulRequest，等待30s，在此期间如果有新消息写入CommitLog中，会触发回调函数通知PullRequestHoldService，按照Topic + MessageQueue精确唤醒pull请求任务，唤醒后 Broker 重新检查可拉取的消息并返回；如果超过30s就返回空结果，让消费者重试pull</p>
+</article>
+
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2026/05/26/hello-world/">第一篇博客</a></div></section></div>
+
+
+
+
+
+
 <footer class="page-footer footnote"><hr><div class="text"><p>© 2026 kiralinn by Stellar</p>
 </div></footer>
-<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right"></aside><div class='float-panel'>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right"><div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8MQ%EF%BC%9F"><span class="toc-text">为什么要用MQ？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Rocket-MQ%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-text">Rocket-MQ的优点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RocketMQ%E7%BB%84%E4%BB%B6"><span class="toc-text">RocketMQ组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%A8%A1%E5%9E%8B"><span class="toc-text">消息模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E6%A8%A1%E5%BC%8F"><span class="toc-text">消息发送模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F"><span class="toc-text">消费模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E6%9C%BA%E5%88%B6"><span class="toc-text">消费机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RocketMQ%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E5%BB%B6%E8%BF%9F%E6%B6%88%E8%B4%B9%EF%BC%9F"><span class="toc-text">RocketMQ怎么实现延迟消费？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E6%95%B0%E9%80%80%E9%81%BF"><span class="toc-text">指数退避</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RocketMQ%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%AF%E7%94%A8%E6%80%A7-%E5%8F%AF%E9%9D%A0%E6%80%A7-%E4%B8%8D%E4%B8%A2%E5%A4%B1%E5%91%A2%EF%BC%9F"><span class="toc-text">RocketMQ如何保证消息的可用性&#x2F;可靠性&#x2F;不丢失呢？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9%E6%B6%88%E6%81%AF%E7%9A%84%E6%83%85%E5%86%B5%EF%BC%9F"><span class="toc-text">如何解决重复消费消息的情况？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-text">如何解决消息积压问题？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E6%B6%88%E6%81%AF%E8%BF%87%E6%BB%A4%EF%BC%9F"><span class="toc-text">如何实现消息过滤？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E6%B6%88%E6%81%AF%E4%BA%8B%E5%8A%A1%E7%9A%84%EF%BC%9F%E5%8D%8A%E6%B6%88%E6%81%AF%EF%BC%9F"><span class="toc-text">怎么实现分布式消息事务的？半消息？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%EF%BC%88DLQ%EF%BC%89%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">死信队列（DLQ）是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81RocketMQ%E7%9A%84%E9%AB%98%E5%8F%AF%E7%94%A8%EF%BC%9F"><span class="toc-text">如何保证RocketMQ的高可用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88RocketMQ%E4%B8%8D%E4%BD%BF%E7%94%A8Zookeeper%E4%BD%9C%E4%B8%BA%E6%B3%A8%E5%86%8C%E4%B8%AD%E5%BF%83%E5%91%A2%EF%BC%9F"><span class="toc-text">为什么RocketMQ不使用Zookeeper作为注册中心呢？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Broker%E6%98%AF%E6%80%8E%E4%B9%88%E4%BF%9D%E5%AD%98%E6%95%B0%E6%8D%AE%E7%9A%84%E5%91%A2%EF%BC%9F"><span class="toc-text">Broker是怎么保存数据的呢？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B4%E8%AF%B4RocketMQ%E6%80%8E%E4%B9%88%E5%AF%B9%E6%96%87%E4%BB%B6%E8%BF%9B%E8%A1%8C%E8%AF%BB%E5%86%99%E7%9A%84%EF%BC%9F"><span class="toc-text">说说RocketMQ怎么对文件进行读写的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RocketMQ%E6%B6%88%E6%81%AF%E9%95%BF%E8%BD%AE%E8%AF%A2%E4%BA%86%E8%A7%A3%E5%90%97%EF%BC%9F"><span class="toc-text">RocketMQ消息长轮询了解吗？</span></a></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel'>
   <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
   </button>
@@ -85,7 +387,7 @@
 
 <script type="text/javascript">
   window.canonical = {"closeEnable":true,"closeText":"关闭提示","originalHost":null,"officialHosts":["localhost"],"encoded":""};
-  window.canonical["param"] = {"permalink":null,"checklink":"/js/plugins/video.js"};
+  window.canonical["param"] = {"permalink":"http://example.com/2026/06/07/RocketMq/","checklink":"/js/plugins/video.js"};
   // Fix: Ensure page is at the correct top position on data load
   if (history.scrollRestoration) {
     history.scrollRestoration = 'auto';

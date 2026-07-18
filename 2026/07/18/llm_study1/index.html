@@ -17,24 +17,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
-  <title>about me - lin的博客</title>
+  <title>Transformer 简介 - lin的博客</title>
 
   
-    <meta name="description" content="📝 关于这个博客  “不积跬步，无以至千里；不积小流，无以成江海。”   记录学习过程中的点滴成长 分享做过的项目和解决的问题 整理思路，沉淀知识 与志同道合的朋友交流   📮 联系我  在线简历: 查看我的简历 GitHub: kiralinn Email: 13677173705@163.com   🙏 感谢阅读 感谢你的到访，希望这里的内容能对你有所帮助。如果有任何问题或建议，欢迎交">
-<meta property="og:type" content="website">
-<meta property="og:title" content="about me">
-<meta property="og:url" content="http://example.com/about/">
+    <meta name="description" content="一、核心定位与起源    项目 内容     提出时间 2017年6月   提出团队 Google Brain   核心论文 《Attention Is All You Need》   原始用途 序列到序列（Sequence-to-Sequence）任务（如机器翻译）   革命性突破 用自注意力取代循环结构，实现并行计算与长程依赖捕捉    Transformer 诞生前，NLP 领域主要依赖">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transformer 简介">
+<meta property="og:url" content="http://example.com/2026/07/18/llm_study1/">
 <meta property="og:site_name" content="lin的博客">
-<meta property="og:description" content="📝 关于这个博客  “不积跬步，无以至千里；不积小流，无以成江海。”   记录学习过程中的点滴成长 分享做过的项目和解决的问题 整理思路，沉淀知识 与志同道合的朋友交流   📮 联系我  在线简历: 查看我的简历 GitHub: kiralinn Email: 13677173705@163.com   🙏 感谢阅读 感谢你的到访，希望这里的内容能对你有所帮助。如果有任何问题或建议，欢迎交">
+<meta property="og:description" content="一、核心定位与起源    项目 内容     提出时间 2017年6月   提出团队 Google Brain   核心论文 《Attention Is All You Need》   原始用途 序列到序列（Sequence-to-Sequence）任务（如机器翻译）   革命性突破 用自注意力取代循环结构，实现并行计算与长程依赖捕捉    Transformer 诞生前，NLP 领域主要依赖">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-05-26T04:00:00.000Z">
-<meta property="article:modified_time" content="2026-05-26T11:25:17.027Z">
+<meta property="article:published_time" content="2026-07-18T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-18T16:45:24.106Z">
 <meta property="article:author" content="kiralinn">
+<meta property="article:tag" content="Transformer">
 <meta name="twitter:card" content="summary">
   
   
   
-  
+  <meta name="keywords" content="Transformer">
 
   <!-- feed -->
   
@@ -46,10 +47,10 @@
 
   
 
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Website","@id":"http://example.com/about/","author":{"@type":"Person","name":"kiralinn","sameAs":[]},"name":"about me","description":" 📝 关于这个博客\n\n“不积跬步，无以至千里；不积小流，无以成江海。”\n\n\n记录学习过程中的点滴成长\n分享做过的项目和解决的问题\n整理思路，沉淀知识\n与志同道合的朋友交流\n\n 📮 联系我\n\n在线简历: 查看我的简历\nGitHub: kiralinn\nEmail: 13677173705@163.com\n\n 🙏 感谢阅读\n感谢你的到访，希望这里的内容能对你有所帮助。如果有任何问题或建议，...","url":"http://example.com/about/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"kiralinn","sameAs":[]},"dateCreated":"2026-07-18T12:00:00+08:00","dateModified":"2026-07-19T00:45:24+08:00","datePublished":"2026-07-18T12:00:00+08:00","description":"","headline":"Transformer 简介","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/07/18/llm_study1/"},"publisher":{"@type":"Organization","name":"kiralinn","sameAs":[]},"url":"http://example.com/2026/07/18/llm_study1/","keywords":"Transformer","image":[]}</script>
   
 </head>
-<body><div id="l_cover"></div><div class="l_body content" id="start" layout="page" type="page" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
+<body><div id="l_cover"></div><div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left"><div class="sidebg"></div><div class="leftbar-container">
 
 
 <header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/01.jpg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">lin的博客</div></a></div></header>
@@ -60,6 +61,8 @@
 </div>
 <div class="widgets">
 <div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
 
 <widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2026/07/18/llm_study1/"><span class="title">Transformer 简介</span></a><a class="item title" href="/2026/06/07/RocketMq/"><span class="title">RocketMQ 知识点整理</span></a><a class="item title" href="/2026/05/26/hello-world/"><span class="title">第一篇博客</span></a></div></widget>
 </div>
@@ -73,41 +76,234 @@
 <div class="article banner top">
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
-
-  <span class="sep"></span>
-  <a class="cap breadcrumb" href="/about/">about me</a>
-  </div>
-<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-05-26T04:00:00.000Z">2026-05-26</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-05-26T11:25:17.027Z">2026-05-26</time></span></div></div></div>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">大模型基础知识</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-07-18T04:00:00.000Z">2026-07-18</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-07-18T16:45:24.106Z">2026-07-19</time></span></div></div></div>
     
     <div class="bottom only-title">
       
       <div class="text-area">
-        <h1 class="text title"><span>about me</span></h1>
+        <h1 class="text title"><span>Transformer 简介</span></h1>
         
       </div>
     </div>
     
   </div>
-  </div><article class="md-text content"><h2 id="关于这个博客"><a class="markdownIt-Anchor" href="#关于这个博客"></a> 📝 关于这个博客</h2>
-<blockquote>
-<p>“不积跬步，无以至千里；不积小流，无以成江海。”</p>
-</blockquote>
+  </div><article class="md-text content"><h1 id="一-核心定位与起源"><a class="markdownIt-Anchor" href="#一-核心定位与起源"></a> 一、核心定位与起源</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">项目</th>
+<th style="text-align:left">内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>提出时间</strong></td>
+<td style="text-align:left">2017年6月</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>提出团队</strong></td>
+<td style="text-align:left">Google Brain</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心论文</strong></td>
+<td style="text-align:left">《Attention Is All You Need》</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>原始用途</strong></td>
+<td style="text-align:left">序列到序列（Sequence-to-Sequence）任务（如机器翻译）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>革命性突破</strong></td>
+<td style="text-align:left">用自注意力取代循环结构，实现并行计算与长程依赖捕捉</td>
+</tr>
+</tbody>
+</table>
+<p>Transformer 诞生前，NLP 领域主要依赖 RNN/LSTM 处理序列数据，但存在三大局限：</p>
+<ol>
+<li><strong>串行计算：</strong> 必须逐词处理，无法并行，训练效率低</li>
+<li><strong>长距离依赖：</strong> 信息传递存在损耗，难以捕捉远距离语义关联</li>
+<li><strong>线性复杂度高：</strong> 随序列长度增长呈二次复杂度</li>
+</ol>
+<hr />
+<h1 id="二-整体架构编码器-解码器框架"><a class="markdownIt-Anchor" href="#二-整体架构编码器-解码器框架"></a> 二、整体架构：编码器-解码器框架</h1>
+<p>Transformer 基本架构由**编码器（Encoder）和解码器（Decoder）**两部分组成，原论文中均使用 6 层堆叠结构。</p>
+<h2 id="21-编码器-encoder输入理解模块"><a class="markdownIt-Anchor" href="#21-编码器-encoder输入理解模块"></a> 2.1 编码器 (Encoder)：输入理解模块</h2>
 <ul>
-<li>记录学习过程中的点滴成长</li>
-<li>分享做过的项目和解决的问题</li>
-<li>整理思路，沉淀知识</li>
-<li>与志同道合的朋友交流</li>
+<li><strong>功能：</strong> 将输入序列转换为富含上下文信息的向量表示，负责“理解”输入内容</li>
+<li><strong>结构组成（每层包含）：</strong><br />
+a. <strong>多头自注意力层：</strong> 捕捉输入序列中所有位置间的依赖关系<br />
+b. <strong>前馈神经网络（FFN）：</strong> 对每个位置的特征进行独立非线性变换<br />
+c. <strong>残差连接：</strong> <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mi>a</mi><mi>y</mi><mi>e</mi><mi>r</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mi>x</mi><mo>+</mo><mi>S</mi><mi>u</mi><mi>b</mi><mi>l</mi><mi>a</mi><mi>y</mi><mi>e</mi><mi>r</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">Layer(x) = x + Sublayer(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="mord mathnormal">u</span><span class="mord mathnormal">b</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span></span></span></span>，解决深度网络梯度消失问题<br />
+d. <strong>层归一化（LayerNorm）：</strong> 加速训练，提高模型稳定性</li>
 </ul>
-<h2 id="联系我"><a class="markdownIt-Anchor" href="#联系我"></a> 📮 联系我</h2>
+<h2 id="22-解码器-decoder输出生成模块"><a class="markdownIt-Anchor" href="#22-解码器-decoder输出生成模块"></a> 2.2 解码器 (Decoder)：输出生成模块</h2>
 <ul>
-<li>在线简历: <a href="/resume/">查看我的简历</a></li>
-<li>GitHub: <a target="_blank" rel="noopener" href="https://github.com/Yulin-Bi">kiralinn</a></li>
-<li>Email: <code>13677173705@163.com</code></li>
+<li><strong>功能：</strong> 基于编码器输出和已生成序列，自回归生成目标序列，负责“生成”输出内容</li>
+<li><strong>结构组成（在编码器基础上增加）：</strong><br />
+a. <strong>掩码多头自注意力层：</strong> 防止模型看到未来位置信息，保证生成的自回归特性<br />
+b. <strong>编码器-解码器注意力层：</strong> 让解码器关注编码器输出的相关部分（如机器翻译中源语言与目标语言的对应关系）</li>
 </ul>
-<h2 id="感谢阅读"><a class="markdownIt-Anchor" href="#感谢阅读"></a> 🙏 感谢阅读</h2>
-<p>感谢你的到访，希望这里的内容能对你有所帮助。如果有任何问题或建议，欢迎交流！</p>
+<h2 id="23-输入输出处理"><a class="markdownIt-Anchor" href="#23-输入输出处理"></a> 2.3 输入输出处理</h2>
+<ul>
+<li><strong>词嵌入（Embedding）：</strong> 将离散词元转换为连续向量表示</li>
+<li><strong>位置编码（Positional Encoding）：</strong> 注入序列位置信息（因自注意力无天然时序感知能力），原论文使用正弦/余弦函数实现</li>
+<li><strong>线性层+Softmax：</strong> 将解码器输出映射为概率分布，生成最终预测结果</li>
+</ul>
+<hr />
+<h1 id="三-核心机制自注意力与多头注意力"><a class="markdownIt-Anchor" href="#三-核心机制自注意力与多头注意力"></a> 三、核心机制：自注意力与多头注意力</h1>
+<h2 id="31-自注意力-self-attention模型的灵魂"><a class="markdownIt-Anchor" href="#31-自注意力-self-attention模型的灵魂"></a> 3.1 自注意力 (Self-Attention)：模型的&quot;灵魂&quot;</h2>
+<p>自注意力机制让每个位置能&quot;关注&quot;序列中所有其他位置，计算过程分为 4 步：</p>
+<ol>
+<li>
+<p><strong>生成 QKV 矩阵：</strong> 通过线性变换将输入向量转换为三个矩阵</p>
+<ul>
+<li><strong>Q (Query)：</strong> 查询向量，当前位置要&quot;查询&quot;的信息</li>
+<li><strong>K (Key)：</strong> 键向量，其他位置提供的&quot;信息标识&quot;</li>
+<li><strong>V (Value)：</strong> 值向量，其他位置提供的&quot;具体信息内容&quot;</li>
+</ul>
+</li>
+<li>
+<p><strong>计算注意力分数：</strong> 通过 Q 与 K 的点积计算相似度</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Scores</mtext><mo>=</mo><mfrac><mrow><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac></mrow><annotation encoding="application/x-tex">\text{Scores} = \frac{Q K^T}{\sqrt{d_k}}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord text"><span class="mord">Scores</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.448331em;vertical-align:-0.93em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5183309999999999em;"><span style="top:-2.25278em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.85722em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.81722em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.18278000000000005em;"><span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.93em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<ul>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mrow><annotation encoding="application/x-tex">\sqrt{d_k}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.04em;vertical-align:-0.18278000000000005em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.85722em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.81722em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.18278000000000005em;"><span></span></span></span></span></span></span></span></span> ：缩放因子，防止点积结果过大导致 Softmax 梯度消失</li>
+</ul>
+</li>
+<li>
+<p><strong>Softmax 归一化：</strong> 将分数转换为 0-1 权重，确保权重和为 1</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Weights</mtext><mo>=</mo><mtext>Softmax</mtext><mo stretchy="false">(</mo><mtext>Scores</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{Weights} = \text{Softmax}(\text{Scores})
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">Weights</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Softmax</span></span><span class="mopen">(</span><span class="mord text"><span class="mord">Scores</span></span><span class="mclose">)</span></span></span></span></span></p>
+</li>
+<li>
+<p><strong>加权求和：</strong> 用注意力权重对 V 加权求和，得到最终注意力输出</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Output</mtext><mo>=</mo><mtext>Weights</mtext><mo>×</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">\text{Output} = \text{Weights} \times V
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">Output</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">Weights</span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span></span></p>
+</li>
+</ol>
+<h2 id="32-多头注意力-multi-head-attention多角度特征捕捉"><a class="markdownIt-Anchor" href="#32-多头注意力-multi-head-attention多角度特征捕捉"></a> 3.2 多头注意力 (Multi-Head Attention)：多角度特征捕捉</h2>
+<ul>
+<li><strong>机制：</strong> 并行运行多个自注意力头，每个头学习不同类型的依赖关系，最后拼接输出并线性变换</li>
+<li><strong>优势：</strong><br />
+a. 捕捉多种语义关系（如句法依赖、语义关联等）<br />
+b. 提高模型表达能力，避免单一注意力头的局限性<br />
+c. 原论文使用 8 个注意力头，总维度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mtext>model</mtext></msub><mo>=</mo><mn>512</mn></mrow><annotation encoding="application/x-tex">d_{\text{model}}=512</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">model</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">5</span><span class="mord">1</span><span class="mord">2</span></span></span></span>，每个头维度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>k</mi></msub><mo>=</mo><msub><mi>d</mi><mi>v</mi></msub><mo>=</mo><mn>64</mn></mrow><annotation encoding="application/x-tex">d_k=d_v=64</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">6</span><span class="mord">4</span></span></span></span></li>
+</ul>
+<hr />
+<h1 id="四-工作流程以机器翻译为例"><a class="markdownIt-Anchor" href="#四-工作流程以机器翻译为例"></a> 四、工作流程：以机器翻译为例</h1>
+<ol>
+<li>
+<p><strong>输入处理：</strong> 英语句子 → 词嵌入 + 位置编码 → 编码器输入</p>
+</li>
+<li>
+<p><strong>编码器计算：</strong></p>
+<ul>
+<li>6 层编码器逐层处理，每层通过多头自注意力捕捉单词间关系（如&quot;love&quot;与&quot;you&quot;的关联）</li>
+<li>输出上下文向量表示，包含完整语义信息</li>
+</ul>
+</li>
+<li>
+<p><strong>解码器计算：</strong></p>
+<ul>
+<li><strong>初始化：</strong> 以特殊起始符 <code>&lt;SOS&gt;</code> 开始生成</li>
+<li><strong>掩码自注意力：</strong> 仅关注已生成单词（如 <code>&lt;SOS&gt;</code> ）</li>
+<li><strong>编码器-解码器注意力：</strong> 关注编码器输出中与当前生成位置相关的英语单词</li>
+<li>前馈网络处理后生成第一个法语单词</li>
+<li>循环此过程，直到生成结束符 <code>&lt;EOS&gt;</code></li>
+</ul>
+</li>
+<li>
+<p><strong>输出处理：</strong> 线性层+Softmax 生成概率分布，选择概率最高的单词作为输出</p>
+</li>
+</ol>
+<hr />
+<h1 id="五-核心优势超越传统模型的关键特性"><a class="markdownIt-Anchor" href="#五-核心优势超越传统模型的关键特性"></a> 五、核心优势：超越传统模型的关键特性</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">特性</th>
+<th style="text-align:left">Transformer</th>
+<th style="text-align:left">RNN/LSTM</th>
+<th style="text-align:left">优势说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>计算方式</strong></td>
+<td style="text-align:left">并行计算</td>
+<td style="text-align:left">串行计算</td>
+<td style="text-align:left">大幅提升训练速度，充分利用 GPU 算力</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>长程依赖</strong></td>
+<td style="text-align:left">直接建模全局依赖</td>
+<td style="text-align:left">信息链式传递</td>
+<td style="text-align:left">无距离衰减，捕捉长文本语义关联更有效</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>注意力机制</strong></td>
+<td style="text-align:left">显式计算注意力权重</td>
+<td style="text-align:left">隐式依赖隐藏状态</td>
+<td style="text-align:left">可解释性更强，能可视化模型关注重点</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>扩展性</strong></td>
+<td style="text-align:left">易于堆叠更深层</td>
+<td style="text-align:left">深层易梯度消失</td>
+<td style="text-align:left">支持构建千亿参数大模型（如 GPT-4）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="六-变体与应用从-nlp-到多模态"><a class="markdownIt-Anchor" href="#六-变体与应用从-nlp-到多模态"></a> 六、变体与应用：从 NLP 到多模态</h1>
+<h2 id="61-三大主流变体"><a class="markdownIt-Anchor" href="#61-三大主流变体"></a> 6.1 三大主流变体</h2>
+<ol>
+<li><strong>纯编码器模型：</strong> 如 BERT (Bidirectional Encoder Representations from Transformers)，擅长理解类任务（文本分类、命名实体识别、问答等）</li>
+<li><strong>纯解码器模型：</strong> 如 GPT (Generative Pre-trained Transformer)，擅长生生成类任务（文本生成、对话、代码生成等），是现代大语言模型主流架构</li>
+<li><strong>编码器-解码器模型：</strong> 如 T5、BART，适用于序列到序列任务（机器翻译、文本摘要、文本改写等）</li>
+</ol>
+<h2 id="62-跨领域应用"><a class="markdownIt-Anchor" href="#62-跨领域应用"></a> 6.2 跨领域应用</h2>
+<ul>
+<li><strong>NLP 领域：</strong> 机器翻译、文本生成、情感分析、问答系统、对话机器人</li>
+<li><strong>计算机视觉：</strong> Vision Transformer (ViT) 将图像分割为 patch 序列处理，实现图像分类、目标检测等任务</li>
+<li><strong>多模态：</strong> CLIP、Flux 等模型融合文本与图像，实现跨模态检索、文生图等应用</li>
+<li><strong>语音处理：</strong> Speech Transformer 用于语音识别、语音合成等任务</li>
+</ul>
+<hr />
+<h1 id="七-总结ai-革命的基石"><a class="markdownIt-Anchor" href="#七-总结ai-革命的基石"></a> 七、总结：AI 革命的基石</h1>
+<p>Transformer 以<strong>自注意力机制</strong>为核心，彻底颠覆了传统序列建模范式，不仅解决了 RNN/LSTM 的固有缺陷，更为 AI 技术发展开辟了新方向。它是现代大语言模型的&quot;通用骨架&quot;，支撑起 GPT、BERT 等里程碑式模型，推动 AI 从&quot;感知&quot;向&quot;认知&quot;跨越，成为自然语言处理乃至人工智能领域的基础架构。</p>
+<p>随着技术演进，Transformer 不断优化（如稀疏注意力、混合专家模型等），在保持核心优势的同时降低计算成本，持续拓展 AI 应用边界。</p>
 <hr />
 </article>
+
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2026/06/07/RocketMq/">RocketMQ 知识点整理</a></div></section></div>
+
+
+
 
 
 
@@ -115,7 +311,9 @@
 </div></footer>
 <div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right"><div class="widgets">
 
-<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E8%BF%99%E4%B8%AA%E5%8D%9A%E5%AE%A2"><span class="toc-text"> 📝 关于这个博客</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%81%94%E7%B3%BB%E6%88%91"><span class="toc-text"> 📮 联系我</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%84%9F%E8%B0%A2%E9%98%85%E8%AF%BB"><span class="toc-text"> 🙏 感谢阅读</span></a></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a></div></widget>
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80-%E6%A0%B8%E5%BF%83%E5%AE%9A%E4%BD%8D%E4%B8%8E%E8%B5%B7%E6%BA%90"><span class="toc-text"> 一、核心定位与起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E7%BC%96%E7%A0%81%E5%99%A8-%E8%A7%A3%E7%A0%81%E5%99%A8%E6%A1%86%E6%9E%B6"><span class="toc-text"> 二、整体架构：编码器-解码器框架</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-%E7%BC%96%E7%A0%81%E5%99%A8-encoder%E8%BE%93%E5%85%A5%E7%90%86%E8%A7%A3%E6%A8%A1%E5%9D%97"><span class="toc-text"> 2.1 编码器 (Encoder)：输入理解模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-%E8%A7%A3%E7%A0%81%E5%99%A8-decoder%E8%BE%93%E5%87%BA%E7%94%9F%E6%88%90%E6%A8%A1%E5%9D%97"><span class="toc-text"> 2.2 解码器 (Decoder)：输出生成模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%A4%84%E7%90%86"><span class="toc-text"> 2.3 输入输出处理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89-%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%B8%8E%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B"><span class="toc-text"> 三、核心机制：自注意力与多头注意力</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#31-%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B-self-attention%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%81%B5%E9%AD%82"><span class="toc-text"> 3.1 自注意力 (Self-Attention)：模型的&quot;灵魂&quot;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B-multi-head-attention%E5%A4%9A%E8%A7%92%E5%BA%A6%E7%89%B9%E5%BE%81%E6%8D%95%E6%8D%89"><span class="toc-text"> 3.2 多头注意力 (Multi-Head Attention)：多角度特征捕捉</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E4%BB%A5%E6%9C%BA%E5%99%A8%E7%BF%BB%E8%AF%91%E4%B8%BA%E4%BE%8B"><span class="toc-text"> 四、工作流程：以机器翻译为例</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94-%E6%A0%B8%E5%BF%83%E4%BC%98%E5%8A%BF%E8%B6%85%E8%B6%8A%E4%BC%A0%E7%BB%9F%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-text"> 五、核心优势：超越传统模型的关键特性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD-%E5%8F%98%E4%BD%93%E4%B8%8E%E5%BA%94%E7%94%A8%E4%BB%8E-nlp-%E5%88%B0%E5%A4%9A%E6%A8%A1%E6%80%81"><span class="toc-text"> 六、变体与应用：从 NLP 到多模态</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#61-%E4%B8%89%E5%A4%A7%E4%B8%BB%E6%B5%81%E5%8F%98%E4%BD%93"><span class="toc-text"> 6.1 三大主流变体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#62-%E8%B7%A8%E9%A2%86%E5%9F%9F%E5%BA%94%E7%94%A8"><span class="toc-text"> 6.2 跨领域应用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83-%E6%80%BB%E7%BB%93ai-%E9%9D%A9%E5%91%BD%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc-text"> 七、总结：AI 革命的基石</span></a></li></ol></div><div class="widget-footer"><a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></a></div></widget>
 </div></aside><div class='float-panel'>
   <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
@@ -129,7 +327,7 @@
 
 <script type="text/javascript">
   window.canonical = {"closeEnable":true,"closeText":"关闭提示","originalHost":null,"officialHosts":["localhost"],"encoded":""};
-  window.canonical["param"] = {"permalink":"http://example.com/about/","checklink":"/js/plugins/video.js"};
+  window.canonical["param"] = {"permalink":"http://example.com/2026/07/18/llm_study1/","checklink":"/js/plugins/video.js"};
   // Fix: Ensure page is at the correct top position on data load
   if (history.scrollRestoration) {
     history.scrollRestoration = 'auto';

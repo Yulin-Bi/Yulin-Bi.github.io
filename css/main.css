@@ -7159,6 +7159,9 @@ details.toc[open] >div.body section .header+.doc_tree {
   padding: 12px 0;
   color: var(--text);
 }
+.search-wrapper .search-input:focus-visible {
+  outline: none;
+}
 .search-wrapper .search-input::placeholder {
   color: var(--text-p3);
 }
@@ -7169,6 +7172,9 @@ details.toc[open] >div.body section .header+.doc_tree {
   .search-wrapper .search-input::placeholder {
     color: var(--text-p2);
   }
+}
+.search-wrapper >.search-form:has(.search-input:focus-visible) {
+  box-shadow: inset 0 0 0 2px rgba(110,118,128,0.22);
 }
 .search-wrapper .search-button {
   border-radius: 8px;

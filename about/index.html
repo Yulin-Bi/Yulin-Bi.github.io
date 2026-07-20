@@ -116,10 +116,10 @@
       <p>留言板</p>
 
     </section>
-    <section class='body cmt-body utterances'>
+    <section class='body cmt-body giscus'>
       
 
-<div id="utterances" repo="Yulin-Bi/Yulin-Bi.github.io" issue-term="pathname" theme="preferred-color-scheme"></div>
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Yulin-Bi/Yulin-Bi.github.io" data-repo-id="R_kgDOSoHXbg" data-category="Announcements" data-category-id="DIC_kwDOSoHXbs4DBjuW" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" crossorigin="anonymous"></div>
 
     </section>
   </div>
@@ -796,18 +796,17 @@
   (function() {
     const lazyload = false;
     
-    function initUtterances() {
-      const el = document.querySelector("#comments #utterances");
+    function initGiscus() {
+      const el = document.querySelector('#comments #giscus');
       if (!el) return;
       
-      function load_utterances() {
+      function load_giscus() {
         try {
           el.innerHTML = '';
         } catch (error) {
           console.error(error);
         }
         const script = document.createElement('script');
-        script.src = 'https://utteranc.es/client.js';
         script.async = true;
         for (const key of Object.keys(el.attributes)) {
           const attr = el.attributes[key];
@@ -818,16 +817,16 @@
         el.appendChild(script);
       }
       
-      util.viewportLazyload(el, load_utterances, lazyload);
+      util.viewportLazyload(el, load_giscus, lazyload);
     }
     
     // Store in global stellar namespace for PJAX reinitialization
     window.stellar = window.stellar || {};
     window.stellar.initComments = window.stellar.initComments || {};
-    window.stellar.initComments.utterances = initUtterances;
+    window.stellar.initComments.giscus = initGiscus;
     
     // Initialize on page load
-    initUtterances();
+    initGiscus();
   })();
 </script>
 

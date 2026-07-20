@@ -10052,9 +10052,6 @@ img[data-ll-status].error+.lazy-icon {
   margin: 0 -4px;
   width: calc(100% + 8px);
 }
-.related-wrap#comments .cmt-body svg.loading {
-  top: 62px;
-}
 .cmt-body {
   --waline-font-size: 0.9375rem;
 /* 常规颜色 */

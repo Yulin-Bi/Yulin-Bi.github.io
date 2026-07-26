@@ -27,13 +27,20 @@
 <meta property="og:site_name" content="lin的博客">
 <meta property="og:description" content="一、Autograd 及基本概念 PyTorch 训练中最核心的自动求导机制是 Autograd。 模型训练的基本过程：先用参数做前向计算得到预测值，再根据预测值和真实值计算损失，然后调用 loss.backward() 自动计算损失对各个参数的梯度，最后按照梯度方向更新参数。这个过程中，设置了 requires_grad&#x3D;True 的 Tensor 会被 PyTorch 跟踪；前向运算产生的中">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yulin-bi.github.io/images/llm-study2/01-autograd-basics.png">
+<meta property="og:image" content="https://yulin-bi.github.io/images/llm-study2/02-standard-training-workflow.png">
+<meta property="og:image" content="https://yulin-bi.github.io/images/llm-study2/03-training-program-device-abstraction.png">
+<meta property="og:image" content="https://yulin-bi.github.io/images/llm-study2/04-transformer-self-attention.png">
+<meta property="og:image" content="https://yulin-bi.github.io/images/llm-study2/05-pytorch-execution-stack.png">
+<meta property="og:image" content="https://yulin-bi.github.io/images/llm-study2/06-ascend-npu-software-stack.png">
 <meta property="article:published_time" content="2026-07-23T04:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-26T15:07:57.267Z">
+<meta property="article:modified_time" content="2026-07-26T15:22:55.579Z">
 <meta property="article:author" content="毕钰林">
 <meta property="article:tag" content="Ascend NPU">
 <meta property="article:tag" content="PyTorch">
 <meta property="article:tag" content="Transformer">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yulin-bi.github.io/images/llm-study2/01-autograd-basics.png">
   
   
   
@@ -49,7 +56,7 @@
 
   
 
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"dateCreated":"2026-07-23T12:00:00+08:00","dateModified":"2026-07-26T23:07:57+08:00","datePublished":"2026-07-23T12:00:00+08:00","description":"","headline":"PyTorch 从模型训推到底层优化简介","mainEntityOfPage":{"@type":"WebPage","@id":"https://yulin-bi.github.io/2026/07/23/llm_study2/"},"publisher":{"@type":"Organization","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"url":"https://yulin-bi.github.io/2026/07/23/llm_study2/","keywords":"Transformer, PyTorch, Ascend NPU","image":[]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"dateCreated":"2026-07-23T12:00:00+08:00","dateModified":"2026-07-26T23:22:55+08:00","datePublished":"2026-07-23T12:00:00+08:00","description":"","headline":"PyTorch 从模型训推到底层优化简介","mainEntityOfPage":{"@type":"WebPage","@id":"https://yulin-bi.github.io/2026/07/23/llm_study2/"},"publisher":{"@type":"Organization","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"url":"https://yulin-bi.github.io/2026/07/23/llm_study2/","keywords":"Transformer, PyTorch, Ascend NPU","image":[]}</script>
   
 </head>
 <body><a class="skip-link" href="#main">跳到主要内容</a><div id="l_cover"></div><div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left" id="leftbar" aria-label="站点侧栏"><div class="sidebg"></div><div class="leftbar-container">
@@ -79,7 +86,7 @@
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
 <span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">大模型基础知识</a></div>
-<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-07-23T04:00:00.000Z">2026-07-23</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-07-26T15:07:57.267Z">2026-07-26</time></span></div></div></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-07-23T04:00:00.000Z">2026-07-23</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-07-26T15:22:55.579Z">2026-07-26</time></span></div></div></div>
     
     <div class="bottom only-title">
       
@@ -99,7 +106,7 @@
 <p>通过线性回归练习可以把这些概念串起来：使用 <code>weight</code> 和 <code>bias</code> 计算 <code>prediction = weight * x + bias</code>，通过平均平方误差得到标量 <code>loss</code>，调用 <code>loss.backward()</code> 得到参数梯度，然后手工执行梯度下降。PyTorch 模型训练最基础的一条完整链路：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">参数和输入</span><br><span class="line">→ 前向计算</span><br><span class="line">→ 计算损失</span><br><span class="line">→ 清空旧梯度</span><br><span class="line">→ backward 自动求导</span><br><span class="line">→ 读取参数 .grad</span><br><span class="line">→ 更新参数</span><br></pre></td></tr></table></figure>
 <p>这条链路是后面学习 <code>nn.Module</code>、优化器、Transformer、分布式训练以及训推框架内部实现的基础。</p>
-<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/d163082b-5c8d-4a99-99a5-a4b1c004ff83.png)</p>
+<p><img src="/images/llm-study2/01-autograd-basics.png" alt="Autograd 及基本概念" /></p>
 <hr />
 <h2 id="二-标准训练流程"><a class="markdownIt-Anchor" href="#二-标准训练流程"></a> 二、标准训练流程</h2>
 <p><strong>把“手工训练参数”的写法升级成标准的 PyTorch 训练流程，核心是 <code>nn.Module</code>。</strong></p>
@@ -111,7 +118,7 @@
 <p>一套标准 PyTorch 模型从定义、训练、推理到保存加载的基本闭环：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">定义 nn.Module</span><br><span class="line">→ 前向计算</span><br><span class="line">→ 计算 loss</span><br><span class="line">→ 清空梯度</span><br><span class="line">→ backward</span><br><span class="line">→ optimizer.step</span><br><span class="line">→ eval + no_grad 推理</span><br><span class="line">→ state_dict 保存和加载</span><br></pre></td></tr></table></figure>
 <p>这就是后面学习多层网络、Transformer、分布式训练和框架内部实现的基础。</p>
-<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/fb47244e-d1b1-4912-b020-302a50dc6121.png)</p>
+<p><img src="/images/llm-study2/02-standard-training-workflow.png" alt="标准训练流程" /></p>
 <hr />
 <h2 id="三-完整训练程序与设备抽象"><a class="markdownIt-Anchor" href="#三-完整训练程序与设备抽象"></a> 三、完整训练程序与设备抽象</h2>
 <p><strong>在标准训练流程的基础上，把一个“能跑的模型训练代码”扩展成完整的训练工程流程。</strong></p>
@@ -123,7 +130,7 @@
 <p>一份标准 PyTorch 训练程序的完整结构：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Dataset</span><br><span class="line">→ DataLoader</span><br><span class="line">→ batch</span><br><span class="line">→ 数据迁移到设备</span><br><span class="line">→ 模型前向</span><br><span class="line">→ 分类损失</span><br><span class="line">→ backward</span><br><span class="line">→ optimizer.step</span><br><span class="line">→ 统计准确率</span><br><span class="line">→ eval + no_grad</span><br><span class="line">→ 保存和加载 state_dict</span><br></pre></td></tr></table></figure>
 <p>这一步之后，已经具备看懂大多数基础 PyTorch 训练代码的能力。接下来进入 Transformer 的输入形状、Attention 计算，以及训练和推理之间真正重要的差异。</p>
-<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/655f4393-2985-4446-851d-84875d34968c.png)</p>
+<p><img src="/images/llm-study2/03-training-program-device-abstraction.png" alt="完整训练程序与设备抽象" /></p>
 <hr />
 <h2 id="四-transformer-中的-self-attention-与训推差异"><a class="markdownIt-Anchor" href="#四-transformer-中的-self-attention-与训推差异"></a> 四、Transformer 中的 Self-Attention 与训推差异</h2>
 <p><strong>Decoder-only Transformer 中注意力机制的完整执行过程，以及训练和推理在框架层面的差别。</strong></p>
@@ -160,7 +167,7 @@
 <p><strong>文本 → 分词（ID）→ 查表（Embedding）→ 加位置（Position）→ 投影（QKV）→ 拆头（Split）→ 点积（MatMul）→ 遮罩（Mask）→ 归一化（Softmax）→ 加权（MatMul）→ 合并（Merge）→ 投影（Out）</strong></p>
 </blockquote>
 <p>现在从“硬盘上的原始数据”一直画到了“神经网络输出的上下文特征”，这是后面学习 Profiler、Dispatcher、SDPA 后端选择、算子融合和昇腾推理优化的直接基础。</p>
-<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/6be74d16-4abe-44b1-8b02-8bb1865b1934.png)</p>
+<p><img src="/images/llm-study2/04-transformer-self-attention.png" alt="Transformer Self-Attention 与训推差异" /></p>
 <hr />
 <h2 id="五-pytorch-模型的底层执行"><a class="markdownIt-Anchor" href="#五-pytorch-模型的底层执行"></a> 五、PyTorch 模型的底层执行</h2>
 <p><strong>PyTorch 模型代码落到底层执行的过程，以及框架优化通常在什么位置发生。</strong></p>
@@ -215,7 +222,7 @@
 <p><strong>它内部依然是在调用普通的加减乘除算子（ATen 基础算子）。</strong></p>
 <p>例如，<code>PowBackward0</code>（平方的反向）内部实际上是：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grad_x = grad_y * <span class="number">2</span> * x;  <span class="comment">// 调用了 aten::mul</span></span><br></pre></td></tr></table></figure>
-<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/49155462-f807-401d-92cb-c0a9989762fa.png)</p>
+<p><img src="/images/llm-study2/05-pytorch-execution-stack.png" alt="PyTorch 模型的底层执行" /></p>
 <hr />
 <h2 id="六-ascend-9xx-cann-与-torch_npu"><a class="markdownIt-Anchor" href="#六-ascend-9xx-cann-与-torch_npu"></a> 六、Ascend 9xx、CANN 与 <code>torch_npu</code></h2>
 <p>服务器环境：</p>
@@ -325,7 +332,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">我的 PyTorch 代码</span><br><span class="line">→ 产生 ATen 算子</span><br><span class="line">→ Dispatcher 找到 NPU 实现</span><br><span class="line">→ torch_npu 接入昇腾</span><br><span class="line">→ CANN 调度资源</span><br><span class="line">→ NPU 执行 Kernel</span><br><span class="line">→ Profiler 分析瓶颈</span><br></pre></td></tr></table></figure>
 <p>结合前几天的内容，目前已经具备一条完整的大模型训推框架学习链：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Tensor</span><br><span class="line">→ Autograd</span><br><span class="line">→ nn.Module</span><br><span class="line">→ DataLoader</span><br><span class="line">→ Transformer</span><br><span class="line">→ Attention</span><br><span class="line">→ Profiler</span><br><span class="line">→ Dispatcher</span><br><span class="line">→ torch.compile</span><br><span class="line">→ torch_npu</span><br><span class="line">→ Ascend NPU</span><br></pre></td></tr></table></figure>
-<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/58bfab1d-c0a6-4052-bbc5-fa5326f2a664.png)</p>
+<p><img src="/images/llm-study2/06-ascend-npu-software-stack.png" alt="Ascend NPU 软件栈" /></p>
 <hr />
 <h2 id="七-总结"><a class="markdownIt-Anchor" href="#七-总结"></a> 七、总结</h2>
 <p>有以基础了解，可知模型训推最底层需要调用许多算子，而这个调用的路径中有许多可以优化的地方，来降低训推成本、提升性能。从最底层的单算子性能优化到算子调用的优化，后续将在以上领域不断学习。</p>

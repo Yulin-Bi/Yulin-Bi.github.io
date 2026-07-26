@@ -1,0 +1,1282 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
+  <link rel="canonical" href="https://yulin-bi.github.io/2026/07/23/llm_study2/">
+  
+  <meta name="generator" content="Hexo 8.1.2">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title>PyTorch 从模型训推到底层优化简介 - lin的博客</title>
+
+  
+    <meta name="description" content="一、Autograd 及基本概念 PyTorch 训练中最核心的自动求导机制是 Autograd。 模型训练的基本过程：先用参数做前向计算得到预测值，再根据预测值和真实值计算损失，然后调用 loss.backward() 自动计算损失对各个参数的梯度，最后按照梯度方向更新参数。这个过程中，设置了 requires_grad&#x3D;True 的 Tensor 会被 PyTorch 跟踪；前向运算产生的中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PyTorch 从模型训推到底层优化简介">
+<meta property="og:url" content="https://yulin-bi.github.io/2026/07/23/llm_study2/">
+<meta property="og:site_name" content="lin的博客">
+<meta property="og:description" content="一、Autograd 及基本概念 PyTorch 训练中最核心的自动求导机制是 Autograd。 模型训练的基本过程：先用参数做前向计算得到预测值，再根据预测值和真实值计算损失，然后调用 loss.backward() 自动计算损失对各个参数的梯度，最后按照梯度方向更新参数。这个过程中，设置了 requires_grad&#x3D;True 的 Tensor 会被 PyTorch 跟踪；前向运算产生的中">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-23T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-26T15:07:57.267Z">
+<meta property="article:author" content="毕钰林">
+<meta property="article:tag" content="Ascend NPU">
+<meta property="article:tag" content="PyTorch">
+<meta property="article:tag" content="Transformer">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="Transformer,PyTorch,Ascend NPU">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=20260720-1">
+
+
+  
+
+  
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"dateCreated":"2026-07-23T12:00:00+08:00","dateModified":"2026-07-26T23:07:57+08:00","datePublished":"2026-07-23T12:00:00+08:00","description":"","headline":"PyTorch 从模型训推到底层优化简介","mainEntityOfPage":{"@type":"WebPage","@id":"https://yulin-bi.github.io/2026/07/23/llm_study2/"},"publisher":{"@type":"Organization","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"url":"https://yulin-bi.github.io/2026/07/23/llm_study2/","keywords":"Transformer, PyTorch, Ascend NPU","image":[]}</script>
+  
+</head>
+<body><a class="skip-link" href="#main">跳到主要内容</a><div id="l_cover"></div><div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left" id="leftbar" aria-label="站点侧栏"><div class="sidebg"></div><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><img no-lazy class="avatar" src="/images/01.jpg" alt="毕钰林 的头像" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main">lin的博客</div></a></div></header>
+
+<div class="nav-area">
+
+<nav class="menu dis-select"><a class="nav-item active" title="首页" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M2 12.204c0-2.289 0-3.433.52-4.381c.518-.949 1.467-1.537 3.364-2.715l2-1.241C9.889 2.622 10.892 2 12 2s2.11.622 4.116 1.867l2 1.241c1.897 1.178 2.846 1.766 3.365 2.715S22 9.915 22 12.203v1.522c0 3.9 0 5.851-1.172 7.063S17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.212S2 17.626 2 13.725z" opacity=".5"/><path fill="currentColor" d="M11.25 18a.75.75 0 0 0 1.5 0v-3a.75.75 0 0 0-1.5 0z"/></svg></a><a class="nav-item" title="归档" href="/archives/" style="color:#3DC550"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.079 5.069c3.795-3.79 9.965-3.75 13.783.069c3.82 3.82 3.86 9.993.064 13.788s-9.968 3.756-13.788-.064a9.81 9.81 0 0 1-2.798-8.28a.75.75 0 1 1 1.487.203a8.31 8.31 0 0 0 2.371 7.017c3.245 3.244 8.468 3.263 11.668.064c3.199-3.2 3.18-8.423-.064-11.668c-3.243-3.242-8.463-3.263-11.663-.068l.748.003a.75.75 0 1 1-.007 1.5l-2.546-.012a.75.75 0 0 1-.746-.747L3.575 4.33a.75.75 0 1 1 1.5-.008z" clip-rule="evenodd"/><path fill="currentColor" d="M12 7.25a.75.75 0 0 1 .75.75v3.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.427-2.426a1 1 0 0 1-.293-.708V8a.75.75 0 0 1 .75-.75" opacity=".5"/></svg></a><a class="nav-item" title="简历" href="/resume/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3 10c0-3.771 0-5.657 1.172-6.828S7.229 2 11 2h2c3.771 0 5.657 0 6.828 1.172S21 6.229 21 10v4c0 3.771 0 5.657-1.172 6.828S16.771 22 13 22h-2c-3.771 0-5.657 0-6.828-1.172S3 17.771 3 14z" opacity=".5"/><path fill="currentColor" fill-rule="evenodd" d="M7.25 12a.75.75 0 0 1 .75-.75h8a.75.75 0 0 1 0 1.5H8a.75.75 0 0 1-.75-.75m0-4A.75.75 0 0 1 8 7.25h8a.75.75 0 0 1 0 1.5H8A.75.75 0 0 1 7.25 8m0 8a.75.75 0 0 1 .75-.75h5a.75.75 0 0 1 0 1.5H8a.75.75 0 0 1-.75-.75" clip-rule="evenodd"/></svg></a><a class="nav-item" title="关于" href="/about/" style="color:#F44336"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10" opacity=".5"/><path fill="currentColor" d="M16.807 19.011A8.46 8.46 0 0 1 12 20.5a8.46 8.46 0 0 1-4.807-1.489c-.604-.415-.862-1.205-.51-1.848C7.41 15.83 8.91 15 12 15s4.59.83 5.318 2.163c.35.643.093 1.433-.511 1.848M12 12a3 3 0 1 0 0-6a3 3 0 0 0 0 6"/></svg></a></nav>
+</div>
+<div class="widgets">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+
+<widget class="widget-wrapper recent post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2026/07/23/llm_study2/"><span class="title">PyTorch 从模型训推到底层优化简介</span></a><a class="item title" href="/2026/07/18/llm_study1/"><span class="title">Transformer 简介</span></a><a class="item title" href="/2026/06/07/RocketMq/"><span class="title">RocketMQ 知识点整理</span></a><a class="item title" href="/2026/05/26/hello-world/"><span class="title">第一篇博客</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/Yulin-Bi" target="_blank" rel="external nofollow noopener noreferrer"><svg aria-hidden="true" role="img" class="color-icon-primary" viewBox="0 0 16 16" width="1em" height="1em" fill="currentColor" style="display:inline-block;user-select:none;vertical-align:text-bottom;overflow:visible"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg></a></div></footer>
+</div></aside><main class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">大模型基础知识</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-07-23T04:00:00.000Z">2026-07-23</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-07-26T15:07:57.267Z">2026-07-26</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>PyTorch 从模型训推到底层优化简介</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h2 id="一-autograd-及基本概念"><a class="markdownIt-Anchor" href="#一-autograd-及基本概念"></a> 一、Autograd 及基本概念</h2>
+<p><strong>PyTorch 训练中最核心的自动求导机制是 Autograd。</strong></p>
+<p>模型训练的基本过程：先用参数做前向计算得到预测值，再根据预测值和真实值计算损失，然后调用 <code>loss.backward()</code> 自动计算损失对各个参数的梯度，最后按照梯度方向更新参数。这个过程中，设置了 <code>requires_grad=True</code> 的 Tensor 会被 PyTorch 跟踪；前向运算产生的中间结果会带有 <code>grad_fn</code>，表示它是由什么运算得到的，以及反向传播时该如何求导。</p>
+<p><strong>叶子 Tensor 和非叶子 Tensor 的区别：</strong> 手工创建的 <code>weight</code>、<code>bias</code> 这类需要被优化的参数通常是叶子 Tensor，反向传播后梯度保存在它们的 <code>.grad</code> 中；而 <code>prediction</code>、<code>loss</code> 这类由运算生成的中间结果属于非叶子 Tensor，默认不会保留 <code>.grad</code>。<code>backward()</code> 本质上就是沿着计算图反向使用链式法则，把不同路径上的梯度贡献累加到参数上。</p>
+<p><strong>梯度累积与清空：</strong> PyTorch 的梯度默认会累积，每轮训练前必须清空上一轮梯度，否则新梯度会继续加到旧梯度上。手工训练时对 <code>.grad</code> 调用 <code>zero_()</code>，使用优化器时写 <code>optimizer.zero_grad()</code>。参数更新要放在 <code>torch.no_grad()</code> 中，因为更新参数只是训练算法的操作，不应该被记录进下一轮计算图。</p>
+<p><strong><code>detach()</code> 与 <code>torch.no_grad()</code> 的区别：</strong> <code>detach()</code> 让某个 Tensor 脱离当前计算图，后续计算不再向前传播梯度；<code>torch.no_grad()</code> 让一段代码整体不记录梯度，通常用于模型推理或手工更新参数。</p>
+<p>通过线性回归练习可以把这些概念串起来：使用 <code>weight</code> 和 <code>bias</code> 计算 <code>prediction = weight * x + bias</code>，通过平均平方误差得到标量 <code>loss</code>，调用 <code>loss.backward()</code> 得到参数梯度，然后手工执行梯度下降。PyTorch 模型训练最基础的一条完整链路：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">参数和输入</span><br><span class="line">→ 前向计算</span><br><span class="line">→ 计算损失</span><br><span class="line">→ 清空旧梯度</span><br><span class="line">→ backward 自动求导</span><br><span class="line">→ 读取参数 .grad</span><br><span class="line">→ 更新参数</span><br></pre></td></tr></table></figure>
+<p>这条链路是后面学习 <code>nn.Module</code>、优化器、Transformer、分布式训练以及训推框架内部实现的基础。</p>
+<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/d163082b-5c8d-4a99-99a5-a4b1c004ff83.png)</p>
+<hr />
+<h2 id="二-标准训练流程"><a class="markdownIt-Anchor" href="#二-标准训练流程"></a> 二、标准训练流程</h2>
+<p><strong>把“手工训练参数”的写法升级成标准的 PyTorch 训练流程，核心是 <code>nn.Module</code>。</strong></p>
+<p><code>nn.Module</code> 用来组织模型结构和参数，<code>__init__()</code> 负责定义模型里有哪些层，<code>forward()</code> 负责定义数据怎么经过这些层。像 <code>nn.Linear</code> 这样的层，本身也是 <code>nn.Module</code>，内部已经包含权重和偏置，不需要手工创建 <code>weight</code> 和 <code>bias</code>。这些参数属于 <code>nn.Parameter</code>，会被模型自动注册，因此 <code>model.parameters()</code>、<code>model.named_parameters()</code> 和优化器都能找到它们。</p>
+<p><strong>标准训练循环的完整写法：</strong> 先执行 <code>prediction = model(x)</code> 完成前向计算，再用损失函数（如 <code>nn.MSELoss()</code>）计算预测值和真实值之间的误差；然后用 <code>optimizer.zero_grad()</code> 清空上一轮梯度，调用 <code>loss.backward()</code> 计算本轮梯度，最后用 <code>optimizer.step()</code> 根据梯度更新模型参数。它和手工更新参数的本质完全一样，只是参数管理和更新工作交给了 PyTorch。</p>
+<p><strong><code>model(x)</code> 与 <code>model.forward(x)</code> 的区别：</strong> <code>model(x)</code> 并不只是简单调用 <code>forward()</code>，它实际会经过 <code>nn.Module</code> 的调用机制，因此可以支持 Hook、状态管理等框架能力。应该使用 <code>model(x)</code>，而不是直接调用 <code>model.forward(x)</code>。</p>
+<p><strong>训练和推理的区别：</strong> 训练时需要前向计算、损失、反向传播和参数更新；推理时只需要前向计算。<code>model.train()</code> 和 <code>model.eval()</code> 只是切换模型中某些层的行为（如 Dropout 和 BatchNorm），并不会自动执行训练或关闭梯度，所以推理时通常还要配合 <code>torch.no_grad()</code>。</p>
+<p><strong><code>state_dict()</code>：</strong> 保存的是模型参数和 Buffer 的名称与 Tensor 映射，可以通过 <code>torch.save()</code> 保存，再通过 <code>load_state_dict()</code> 加载到同结构的新模型中。</p>
+<p>一套标准 PyTorch 模型从定义、训练、推理到保存加载的基本闭环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">定义 nn.Module</span><br><span class="line">→ 前向计算</span><br><span class="line">→ 计算 loss</span><br><span class="line">→ 清空梯度</span><br><span class="line">→ backward</span><br><span class="line">→ optimizer.step</span><br><span class="line">→ eval + no_grad 推理</span><br><span class="line">→ state_dict 保存和加载</span><br></pre></td></tr></table></figure>
+<p>这就是后面学习多层网络、Transformer、分布式训练和框架内部实现的基础。</p>
+<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/fb47244e-d1b1-4912-b020-302a50dc6121.png)</p>
+<hr />
+<h2 id="三-完整训练程序与设备抽象"><a class="markdownIt-Anchor" href="#三-完整训练程序与设备抽象"></a> 三、完整训练程序与设备抽象</h2>
+<p><strong>在标准训练流程的基础上，把一个“能跑的模型训练代码”扩展成完整的训练工程流程。</strong></p>
+<p><strong><code>Dataset</code> 和 <code>DataLoader</code> 的分工：</strong> <code>Dataset</code> 负责定义数据有多少条、每一条怎么取，<code>DataLoader</code> 负责把数据打乱、分成 batch，并在训练时一批一批送给模型。batch 是一次输入的数据，iteration 是完成一次前向、反向和参数更新，epoch 是把整个数据集完整训练一遍。</p>
+<p><strong>从回归到分类任务的过渡：</strong> 分类模型最后输出的不是类别本身，而是每个类别对应的原始分数（logits），形状通常是 <code>[B, C]</code>。预测时通过 <code>argmax</code> 取分数最大的类别；训练时使用 <code>CrossEntropyLoss</code>，标签直接用类别编号并采用 <code>torch.long</code> 类型，不需要自己转成 one-hot，也不要在模型最后手工添加 Softmax，因为交叉熵内部已经完成了更稳定的计算。</p>
+<p><strong>标准分类训练流程：</strong> DataLoader 取出一个 batch，把输入和标签迁移到设备，执行前向计算得到 logits，计算损失，清空梯度，反向传播，更新参数，然后统计当前 batch 的预测正确数量。训练结束后，再根据总正确数和总样本数计算准确率。损失负责提供可求导的优化目标，准确率只负责评价结果，二者作用不同。</p>
+<p><strong>统一设备抽象：</strong> 模型通过 <code>model.to(device)</code> 迁移，数据通过 <code>tensor.to(device)</code> 迁移，模型参数和输入必须位于同一设备，否则算子无法执行。DataLoader 通常先在 CPU 上生成 batch，再复制到 GPU 或 NPU，因此数据读取、batch 组装和设备间搬运本身也可能成为性能瓶颈。</p>
+<p><strong>完整闭环：</strong> 训练时使用 <code>model.train()</code>；验证和推理时使用 <code>model.eval()</code> 配合 <code>torch.no_grad()</code>；模型参数通过 <code>state_dict()</code> 保存，再加载到相同结构的新模型中进行推理。</p>
+<p>一份标准 PyTorch 训练程序的完整结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Dataset</span><br><span class="line">→ DataLoader</span><br><span class="line">→ batch</span><br><span class="line">→ 数据迁移到设备</span><br><span class="line">→ 模型前向</span><br><span class="line">→ 分类损失</span><br><span class="line">→ backward</span><br><span class="line">→ optimizer.step</span><br><span class="line">→ 统计准确率</span><br><span class="line">→ eval + no_grad</span><br><span class="line">→ 保存和加载 state_dict</span><br></pre></td></tr></table></figure>
+<p>这一步之后，已经具备看懂大多数基础 PyTorch 训练代码的能力。接下来进入 Transformer 的输入形状、Attention 计算，以及训练和推理之间真正重要的差异。</p>
+<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/655f4393-2985-4446-851d-84875d34968c.png)</p>
+<hr />
+<h2 id="四-transformer-中的-self-attention-与训推差异"><a class="markdownIt-Anchor" href="#四-transformer-中的-self-attention-与训推差异"></a> 四、Transformer 中的 Self-Attention 与训推差异</h2>
+<p><strong>Decoder-only Transformer 中注意力机制的完整执行过程，以及训练和推理在框架层面的差别。</strong></p>
+<p><strong>关键认知纠正：</strong> 训练时不一定同时使用编码器和解码器，推理时也不一定只使用解码器。BERT 这类模型始终只用编码器，GPT、Llama、Qwen 这类主流大语言模型在训练和推理时始终只用解码器，T5 这类模型才同时包含编码器和解码器。对当前大模型训推框架最重要的是 Decoder-only 架构。</p>
+<p><strong>核心张量形状 <code>[B, S, H]</code>：</strong> 分别表示 batch size、序列长度和隐藏维度。token id 先通过 Embedding 从 <code>[B, S]</code> 变成 <code>[B, S, H]</code>，然后进入 Transformer Block。框架优化时，Shape、dtype、layout 和 device 会直接决定计算量、显存占用、算子选择和 Kernel 路由。</p>
+<p><strong>Self-Attention 计算过程：</strong> 输入分别经过 Q、K、V 三个线性投影，再将隐藏维度拆成多个注意力头，从 <code>[B, S, H]</code> 变成 <code>[B, heads, S, head_dim]</code>。随后通过 <code>Q @ Kᵀ</code> 得到 <code>[B, heads, S, S]</code> 的注意力分数，除以 <code>sqrt(head_dim)</code> 保持数值稳定，再经过因果掩码和 Softmax 得到注意力权重，最后与 V 相乘，并重新合并多个头，恢复成 <code>[B, S, H]</code>。</p>
+<p><strong>因果掩码的作用：</strong> 阻止当前位置看到未来 token。Decoder-only 模型训练时虽然一次输入完整序列，但每个位置只能利用自己和前面位置的信息，因此可以并行训练，同时保持自回归约束。推理时没有反向传播，而是先用 Prefill 一次处理完整提示词并生成历史 K、V，之后 Decode 每次只处理一个新 token。</p>
+<p><strong>训练、Prefill 和 Decode 的性能差异：</strong> 训练阶段处理完整序列，需要保存激活并进行反向传播；Prefill 同样处理较长序列，但只有前向，并建立 KV Cache；Decode 每轮只有一个新 Query，却需要读取全部历史 KV Cache，因此通常更偏访存瓶颈，也更容易受到小 Shape、Kernel 启动开销和请求调度的影响。</p>
+<p><strong>KV Cache：</strong> 保存历史 token 的 K 和 V，避免生成每个新 token 时重新计算全部历史内容。它减少了重复计算，但会占用大量显存，因此推理框架需要专门处理缓存分配、回收、分块、复用和抢占。</p>
+<p><strong><code>transpose()</code>、<code>view()</code> 和 <code>contiguous()</code> 的关系：</strong> <code>transpose()</code> 通常只是修改 Tensor 的维度解释和 stride，不一定搬动数据；如果后续需要按新的维度顺序重新 <code>view()</code>，往往要先调用 <code>contiguous()</code> 重新整理底层内存。多余的数据重排和拷贝会产生实际性能开销。</p>
+<p><strong>PyTorch 的 <code>scaled_dot_product_attention</code>：</strong> 手写 Attention 是为了理解计算过程，真实框架通常通过统一的 SDPA 接口，根据设备、dtype 和 Shape 选择不同的 Attention 后端。</p>
+<p>沿着下面这条链路理解注意力代码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">原始文本: [&quot;Hello world&quot;, &quot;AI is great&quot;]</span><br><span class="line">    ↓ Tokenizer（分词器）</span><br><span class="line">Token IDs: [B, S]  ← 例如形状 [2, 16]，数据类型 torch.long，每个数字代表一个单词的编号</span><br><span class="line">    ↓ nn.Embedding（词嵌入矩阵，形状 [Vocab_Size, H]）</span><br><span class="line">输入 x: [B, S, H]  ← 现在变成了浮点数向量（特征），比如 [2, 16, 64]</span><br><span class="line"></span><br><span class="line">    ↓ Q/K/V 线性层（全连接，不带 bias）</span><br><span class="line">Q, K, V: [B, S, H]</span><br><span class="line">    ↓ 拆头 (view + transpose)</span><br><span class="line">Q, K, V: [B, heads, S, head_dim]  ← 例如 [2, 8, 16, 8]</span><br><span class="line">    ↓ 第一次 MatMul (Q × K^T)</span><br><span class="line">Attention Scores: [B, heads, S, S]  ← 关键！S×S 的关系矩阵，例如 [2, 8, 16, 16]</span><br><span class="line">    ↓ 因果 Mask (上三角置 -inf) —— 保证只看左边</span><br><span class="line">Masked Scores: [B, heads, S, S]</span><br><span class="line">    ↓ Softmax (沿最后一维) —— 每行概率和为 1</span><br><span class="line">Attention Weights: [B, heads, S, S] (概率分布)</span><br><span class="line">    ↓ 第二次 MatMul (Weights × V) —— 加权求和</span><br><span class="line">Context: [B, heads, S, head_dim]  ← 提取出的上下文向量</span><br><span class="line">    ↓ 合并头 (transpose + view)</span><br><span class="line">Output: [B, S, H]</span><br><span class="line">    ↓ Out 投影层（线性层）</span><br><span class="line">Final Output: [B, S, H]  ← 这一层的结果通常就是 Transformer 块的输出</span><br></pre></td></tr></table></figure>
+<p>从框架优化角度区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">训练：完整序列 + backward + 激活保存</span><br><span class="line">Prefill：完整提示词前向 + 构建 KV Cache</span><br><span class="line">Decode：单 token 前向 + 读取历史 KV Cache</span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<p><strong>1. 输入数据类型必须是 <code>torch.long</code>（整数索引）</strong></p>
+<ul>
+<li><code>nn.Embedding</code> 是一个巨大的查找表（Lookup Table）。它不接受浮点数，只接受整数索引。</li>
+<li>如果把 <code>Token IDs</code> 误写成 <code>torch.float32</code>，会直接报错：<code>RuntimeError: Expected tensor for argument #1 'indices' to have scalar type Long</code>。</li>
+</ul>
+<p><strong>2. 矩阵形状：<code>[Vocab_Size, H]</code></strong></p>
+<ul>
+<li>词嵌入矩阵的大小是 <code>词汇表大小 × 隐藏层维度</code>。</li>
+<li>当输入 <code>[B, S]</code> 的索引时，Embedding 层内部其实是在做“按索引取行”的操作（<code>embedding_matrix[token_id]</code>），得到 <code>[B, S, H]</code>。</li>
+</ul>
+<p><strong>3. 位置编码（Positional Encoding）去哪儿了？</strong></p>
+<ul>
+<li>现在的 <code>[B, S, H]</code> 是纯词向量（Token Embedding），<strong>不包含位置信息</strong>。在真正的 Transformer 里，这之后会立刻加上（或拼接）<strong>位置编码（Positional Encoding / RoPE）</strong>，变成带位置的向量，然后再送入 Q/K/V 线性层。</li>
+<li>如果不加位置编码，模型会把“我爱你”和“你爱我”当成完全一样的输入，因为单词袋（Bag of Words）不考虑顺序。</li>
+</ul>
+<p>下次看 Attention 代码时，脑子里过的流程应该是：</p>
+<blockquote>
+<p><strong>文本 → 分词（ID）→ 查表（Embedding）→ 加位置（Position）→ 投影（QKV）→ 拆头（Split）→ 点积（MatMul）→ 遮罩（Mask）→ 归一化（Softmax）→ 加权（MatMul）→ 合并（Merge）→ 投影（Out）</strong></p>
+</blockquote>
+<p>现在从“硬盘上的原始数据”一直画到了“神经网络输出的上下文特征”，这是后面学习 Profiler、Dispatcher、SDPA 后端选择、算子融合和昇腾推理优化的直接基础。</p>
+<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/6be74d16-4abe-44b1-8b02-8bb1865b1934.png)</p>
+<hr />
+<h2 id="五-pytorch-模型的底层执行"><a class="markdownIt-Anchor" href="#五-pytorch-模型的底层执行"></a> 五、PyTorch 模型的底层执行</h2>
+<p><strong>PyTorch 模型代码落到底层执行的过程，以及框架优化通常在什么位置发生。</strong></p>
+<p><strong>Eager 模式：</strong> PyTorch 默认的执行模式。Python 代码执行到一个操作，框架就立即分发并执行对应算子。像 <code>nn.Linear</code>、ReLU、Attention 这种上层模块，最终会展开成多个 ATen 算子，再由 Dispatcher 根据 Tensor 的设备、Autograd 状态、混合精度等信息选择具体实现，最后落到 CPU、CUDA 或 NPU Kernel。这里要区分三个层次：<code>nn.Module</code> 是模型组织单位，ATen Operator 是框架算子单位，Kernel 是硬件上的实际执行单位。</p>
+<p><strong>PyTorch Profiler：</strong> 用于查看真实执行过程，包括前向算子、反向算子、调用次数、CPU 时间、CUDA 时间和内存变化。性能瓶颈不一定只是某个大算子慢，也可能是大量小算子反复调用、频繁 Kernel 启动、冗余数据拷贝、同步等待或临时内存分配造成的。GPU 默认异步执行，所以普通 Python 计时可能只测到任务下发时间，正式分析应使用 Profiler、同步计时或设备 Event。</p>
+<p><strong>Dispatcher：</strong> 同一个 <code>torch.add</code>、<code>torch.mm</code> 或 Attention API，可以在不同设备上调用不同实现，就是因为算子会注册到不同 Dispatch Key 下。CPU、CUDA、Meta、Autograd、Autocast 和外部设备后端都可能参与分发。因此，<code>torch_npu</code> 这类扩展的重要职责，就是把 NPU 设备、算子实现、Autograd 和相关运行时能力接入 PyTorch 的分发体系。</p>
+<p><strong><code>torch.compile</code>：</strong> Eager 模式是逐算子执行，Compile 模式会尽量捕获一段 Python 计算形成图，再做整体优化。基本链路是：TorchDynamo 捕获 Python 程序并生成 FX Graph，AOTAutograd 处理训练所需的前向和反向图，TorchInductor 或其他后端负责融合、调度和代码生成。这样可以减少 Python 调用、Dispatcher 开销、Kernel 启动次数、中间 Tensor 和显存读写。</p>
+<p><strong>编译模式的代价：</strong> 第一次运行通常要承担图捕获、Guard 建立、代码生成和编译成本，只有后续稳态运行才能复用结果。输入 Shape、dtype、device 或 Python 状态变化时，原来的 Guard 可能失效，从而触发重新编译。遇到无法捕获的 Python 行为（如依赖 Tensor 数值的 <code>.item()</code> 分支），还可能产生 Graph Break，让一部分代码退回 Eager 执行。</p>
+<p>两条最重要的框架执行链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Eager：</span><br><span class="line">Python 模型</span><br><span class="line">→ nn.Module</span><br><span class="line">→ ATen 算子</span><br><span class="line">→ Dispatcher</span><br><span class="line">→ 设备后端</span><br><span class="line">→ Kernel</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Compile：</span><br><span class="line">Python 模型</span><br><span class="line">→ TorchDynamo</span><br><span class="line">→ FX Graph</span><br><span class="line">→ AOTAutograd</span><br><span class="line">→ Inductor/设备编译后端</span><br><span class="line">→ 融合 Kernel</span><br></pre></td></tr></table></figure>
+<p>看一个模型时，不再只是看“它用了 Linear 或 Attention”，而要进一步考虑：它展开成哪些算子、由哪个后端执行、是否有多余拷贝、是否存在大量小 Kernel、能否捕获成图、Shape 变化会不会重新编译，以及训练场景下反向图是否也能正确优化。</p>
+<h3 id="解惑为什么反向传播必须调用反向算子"><a class="markdownIt-Anchor" href="#解惑为什么反向传播必须调用反向算子"></a> 解惑：为什么反向传播必须调用“反向算子”？</h3>
+<h4 id="1-一句话核心答案"><a class="markdownIt-Anchor" href="#1-一句话核心答案"></a> 1. 一句话核心答案</h4>
+<p><strong>“求梯度”是数学上的</strong>目的**，而“反向算子”是在 GPU/CPU 上执行这一目的的<strong>具体工具</strong>。**<br />
+反向算子不是新的数学，它只是把求导公式（如 <code>grad_w = grad_y * x</code>）封装成了一段计算机能执行的、可被调用的函数（Kernel）。</p>
+<h4 id="2-数学-vs-工程"><a class="markdownIt-Anchor" href="#2-数学-vs-工程"></a> 2. 数学 vs 工程</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">数学视角</th>
+<th style="text-align:left">工程视角（PyTorch）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>任务</strong></td>
+<td style="text-align:left">推导出导数公式：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>L</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>w</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>L</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>y</mi></mrow></mfrac><mo>⋅</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">\frac{\partial L}{\partial w} = \frac{\partial L}{\partial y} \cdot x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal mtight">L</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.3612159999999998em;vertical-align:-0.481108em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal mtight">L</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.481108em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">x</span></span></span></span></td>
+<td style="text-align:left">计算出数值：<code>grad_w = dout * x</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>工具</strong></td>
+<td style="text-align:left">纸和笔，链式法则</td>
+<td style="text-align:left">C++/CUDA 代码，浮点乘加运算</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>封装</strong></td>
+<td style="text-align:left">不需要，大脑直接算</td>
+<td style="text-align:left">必须打包成一段可执行的函数，这就是 <strong>Backward Kernel（反向算子）</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="3-为什么不能拿前向算子来反向推导"><a class="markdownIt-Anchor" href="#3-为什么不能拿前向算子来反向推导"></a> 3. 为什么不能拿“前向算子”来反向推导？</h4>
+<p>因为<strong>输入参数完全不同</strong>：</p>
+<ul>
+<li><strong>前向算子</strong>（如 <code>aten::addmm</code>）接收：<code>(input, weight, bias)</code>，输出 <code>output</code>。</li>
+<li><strong>反向算子</strong>（如 <code>AddmmBackward0</code>）接收：<code>(grad_output, input, weight)</code>，输出 <code>grad_input</code> 和 <code>grad_weight</code>。</li>
+</ul>
+<p>反向计算需要<strong>前向的中间结果</strong>（如 <code>input</code> 和 <code>weight</code>）以及<strong>顶层的梯度</strong>（<code>grad_output</code>）。这套参数组合在前向逻辑中不存在，必须单独编写专门的代码来处理。</p>
+<h4 id="4-反向算子内部在做什么"><a class="markdownIt-Anchor" href="#4-反向算子内部在做什么"></a> 4. 反向算子内部在做什么？</h4>
+<p><strong>它内部依然是在调用普通的加减乘除算子（ATen 基础算子）。</strong></p>
+<p>例如，<code>PowBackward0</code>（平方的反向）内部实际上是：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grad_x = grad_y * <span class="number">2</span> * x;  <span class="comment">// 调用了 aten::mul</span></span><br></pre></td></tr></table></figure>
+<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/49155462-f807-401d-92cb-c0a9989762fa.png)</p>
+<hr />
+<h2 id="六-ascend-9xx-cann-与-torch_npu"><a class="markdownIt-Anchor" href="#六-ascend-9xx-cann-与-torch_npu"></a> 六、Ascend 9xx、CANN 与 <code>torch_npu</code></h2>
+<p>服务器环境：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">项目</th>
+<th style="text-align:left">详情</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>服务器操作系统</strong></td>
+<td style="text-align:left"><strong>Linux</strong> (内核版本 <code>5.10.0-182...</code>，架构 <strong>aarch64</strong>)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Python 版本</strong></td>
+<td style="text-align:left"><strong>3.11.4</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>torch 版本</strong></td>
+<td style="text-align:left"><strong>2.7.1+cpu</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>torch_npu 版本</strong></td>
+<td style="text-align:left"><strong>2.7.1.post2.dev20251226</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CANN 版本</strong></td>
+<td style="text-align:left"><strong>8.5.0</strong> (路径: <code>/home/developer/Ascend/cann-8.5.0</code>)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>NPU 型号</strong></td>
+<td style="text-align:left"><strong>Ascend 910</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>设备数量</strong></td>
+<td style="text-align:left"><strong>2</strong> (芯片0 和 芯片1，物理ID分别为 8 和 9，HBM总容量均为 64GB)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>当前 Python 路径</strong></td>
+<td style="text-align:left"><strong><code>/usr/local/bin/python</code></strong> (注：包安装目录位于 <code>/opt/buildtools/Python-3.11.4/lib/python3.11/site-packages</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>注意：利用<code>pypto toolkit</code>和<code>算子一站式平台</code>分析性能。</p>
+<hr />
+<p><strong>PyTorch 接入昇腾 NPU 的完整链路，以及大模型训推框架优化工程师需要理解的硬件适配链路。</strong></p>
+<p><strong>昇腾软件栈的整体结构：</strong> 一个 PyTorch 模型运行在 Ascend 910 上，不是直接调用硬件，而是经过多层转换：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PyTorch 模型代码</span><br><span class="line">→ ATen 算子</span><br><span class="line">→ Dispatcher</span><br><span class="line">→ torch_npu</span><br><span class="line">→ CANN</span><br><span class="line">→ Ascend NPU Kernel</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>其中：</p>
+<ul>
+<li>PyTorch 负责提供统一的模型和算子接口；</li>
+<li>ATen 是 PyTorch 底层算子抽象；</li>
+<li>Dispatcher 根据 Tensor 的设备和状态选择具体实现；</li>
+<li><code>torch_npu</code> 是昇腾对 PyTorch 的扩展，让 PyTorch 能识别并调用 NPU；</li>
+<li>CANN 是昇腾的软件平台，负责运行时、算子库、编译和设备调度；</li>
+<li>最终由 Ascend NPU 执行硬件计算。</li>
+</ul>
+<p><strong><code>torch_npu</code> 的定位：</strong> 不是简单的一堆 NPU 算子，而是一整套 PyTorch 到昇腾的适配层，包括设备管理、Tensor 创建、算子注册、Autograd 支持、Stream、Event、Profiler 等能力。</p>
+<p><strong>CPU/CUDA/NPU 三种设备在 PyTorch 中的统一抽象：</strong> 上层代码基本不变：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">model.to(device)</span><br><span class="line">tensor.to(device)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>区别只在底层执行路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">CPU Tensor</span><br><span class="line">→ CPU Kernel</span><br><span class="line"></span><br><span class="line">CUDA Tensor</span><br><span class="line">→ CUDA Backend</span><br><span class="line">→ CUDA Kernel</span><br><span class="line"></span><br><span class="line">NPU Tensor</span><br><span class="line">→ torch_npu</span><br><span class="line">→ CANN</span><br><span class="line">→ Ascend Kernel</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这也是为什么深度学习框架可以做到“一套模型代码，多种硬件运行”。</p>
+<p><strong>Tensor 在设备之间迁移的过程：</strong> 数据不是凭空出现在 NPU 上，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CPU 内存</span><br><span class="line">→ 数据拷贝</span><br><span class="line">→ NPU 显存</span><br><span class="line">→ NPU 计算</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>框架优化时必须关注数据搬运成本。很多性能问题不是算子计算慢，而是：</p>
+<ul>
+<li>CPU 和 NPU 之间频繁拷贝；</li>
+<li>不必要的数据同步；</li>
+<li>小算子启动开销；</li>
+<li>Host 下发等待。</li>
+</ul>
+<p><strong>Autograd 在异构设备上的工作方式：</strong> 训练不仅要求前向算子能运行，还要求：</p>
+<ul>
+<li>前向结果能建立计算图；</li>
+<li>对应 backward 算子存在；</li>
+<li>梯度计算正确；</li>
+<li>参数更新正常。</li>
+</ul>
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">推理支持 ≠ 训练支持</span><br></pre></td></tr></table></figure>
+<p>一个算子只支持 forward，只能用于推理；训练还需要完整的反向链路。</p>
+<p><strong>NPU 上的异步执行：</strong> 和 CUDA 类似，Python 调用设备算子时，CPU 通常只是提交任务，不一定等待硬件完成。所以直接用 <code>time.time()</code> 包住模型执行可能测不准，需要调用 <code>torch.npu.synchronize()</code> 确定设备任务完成后再统计时间。但同步不能滥用，因为同步会阻塞流水，降低性能。真正优化时需要平衡异步执行效率与必要同步保证正确性。</p>
+<p><strong>Stream 的概念：</strong> Stream 是设备上的任务队列，计算、数据搬运等任务可以通过不同 Stream 形成流水。如果设计合理，可以让搬运和计算重叠，提高设备利用率。</p>
+<p><strong>从框架开发角度理解算子追踪方法：</strong> 分析一个算子，不应该只停留在 <code>torch.mm(x, y)</code>，而应该沿着以下链路逐层定位：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Python API</span><br><span class="line">→ ATen 算子</span><br><span class="line">→ Dispatcher 注册</span><br><span class="line">→ torch_npu 实现</span><br><span class="line">→ CANN 接口</span><br><span class="line">→ Kernel</span><br><span class="line">→ 性能分析</span><br></pre></td></tr></table></figure>
+<p><strong>如何阅读 <code>torch_npu</code> 开源代码：</strong> 不要一开始看全部源码，而应该按照功能寻找：</p>
+<ul>
+<li>设备初始化；</li>
+<li>Tensor 创建和迁移；</li>
+<li>算子注册；</li>
+<li>Autograd 支持；</li>
+<li>Stream/Event；</li>
+<li>测试代码。</li>
+</ul>
+<p>尤其测试代码非常重要，因为它告诉你：</p>
+<ul>
+<li>支持哪些 dtype；</li>
+<li>支持哪些 Shape；</li>
+<li>CPU/NPU 如何对比；</li>
+<li>精度误差如何定义；</li>
+<li>forward/backward 是否覆盖。</li>
+</ul>
+<p>从 PyTorch 用户视角到框架开发视角的转换：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">我的 PyTorch 代码</span><br><span class="line">→ 产生 ATen 算子</span><br><span class="line">→ Dispatcher 找到 NPU 实现</span><br><span class="line">→ torch_npu 接入昇腾</span><br><span class="line">→ CANN 调度资源</span><br><span class="line">→ NPU 执行 Kernel</span><br><span class="line">→ Profiler 分析瓶颈</span><br></pre></td></tr></table></figure>
+<p>结合前几天的内容，目前已经具备一条完整的大模型训推框架学习链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Tensor</span><br><span class="line">→ Autograd</span><br><span class="line">→ nn.Module</span><br><span class="line">→ DataLoader</span><br><span class="line">→ Transformer</span><br><span class="line">→ Attention</span><br><span class="line">→ Profiler</span><br><span class="line">→ Dispatcher</span><br><span class="line">→ torch.compile</span><br><span class="line">→ torch_npu</span><br><span class="line">→ Ascend NPU</span><br></pre></td></tr></table></figure>
+<p>![img](file:///D:/JAVA/git-pro/my-blog/source/images/58bfab1d-c0a6-4052-bbc5-fa5326f2a664.png)</p>
+<hr />
+<h2 id="七-总结"><a class="markdownIt-Anchor" href="#七-总结"></a> 七、总结</h2>
+<p>有以基础了解，可知模型训推最底层需要调用许多算子，而这个调用的路径中有许多可以优化的地方，来降低训推成本、提升性能。从最底层的单算子性能优化到算子调用的优化，后续将在以上领域不断学习。</p>
+</article>
+
+
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2026/07/18/llm_study1/">Transformer 简介</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body giscus'>
+      
+
+<div id="giscus" src="https://giscus.app/client.js" data-repo="Yulin-Bi/Yulin-Bi.github.io" data-repo-id="R_kgDOSoHXbg" data-category="Announcements" data-category-id="DIC_kwDOSoHXbs4DBjuW" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" crossorigin="anonymous"></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>© 2026 毕钰林 by Stellar</p>
+</div></footer>
+<div class="main-mask" aria-hidden="true" onclick="sidebar.dismiss()"></div></main><aside class="l_right" id="rightbar" aria-label="文章辅助信息"><div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><button type="button" class="cap-action" aria-label="折叠或展开目录" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-autograd-%E5%8F%8A%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text"> 一、Autograd 及基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%A0%87%E5%87%86%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B"><span class="toc-text"> 二、标准训练流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E5%AE%8C%E6%95%B4%E8%AE%AD%E7%BB%83%E7%A8%8B%E5%BA%8F%E4%B8%8E%E8%AE%BE%E5%A4%87%E6%8A%BD%E8%B1%A1"><span class="toc-text"> 三、完整训练程序与设备抽象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-transformer-%E4%B8%AD%E7%9A%84-self-attention-%E4%B8%8E%E8%AE%AD%E6%8E%A8%E5%B7%AE%E5%BC%82"><span class="toc-text"> 四、Transformer 中的 Self-Attention 与训推差异</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-pytorch-%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BA%95%E5%B1%82%E6%89%A7%E8%A1%8C"><span class="toc-text"> 五、PyTorch 模型的底层执行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E6%83%91%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E5%BF%85%E9%A1%BB%E8%B0%83%E7%94%A8%E5%8F%8D%E5%90%91%E7%AE%97%E5%AD%90"><span class="toc-text"> 解惑：为什么反向传播必须调用“反向算子”？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%A0%B8%E5%BF%83%E7%AD%94%E6%A1%88"><span class="toc-text"> 1. 一句话核心答案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E6%95%B0%E5%AD%A6-vs-%E5%B7%A5%E7%A8%8B"><span class="toc-text"> 2. 数学 vs 工程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E6%8B%BF%E5%89%8D%E5%90%91%E7%AE%97%E5%AD%90%E6%9D%A5%E5%8F%8D%E5%90%91%E6%8E%A8%E5%AF%BC"><span class="toc-text"> 3. 为什么不能拿“前向算子”来反向推导？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%8F%8D%E5%90%91%E7%AE%97%E5%AD%90%E5%86%85%E9%83%A8%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-text"> 4. 反向算子内部在做什么？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD-ascend-9xx-cann-%E4%B8%8E-torch_npu"><span class="toc-text"> 六、Ascend 9xx、CANN 与 torch_npu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83-%E6%80%BB%E7%BB%93"><span class="toc-text"> 七、总结</span></a></li></ol></div><div class="widget-footer"><button type="button" class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></button><button type="button" class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></button></div></widget>
+</div></aside><div class='float-panel'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' aria-label='打开文章目录' aria-controls='rightbar' aria-expanded='false' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' aria-label='打开站点菜单' aria-controls='leftbar' aria-expanded='false' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+
+
+<script type="text/javascript">
+  window.canonical = {"closeEnable":true,"closeText":"关闭提示","originalHost":"yulin-bi.github.io","officialHosts":["localhost"],"encoded":"eXVsaW4tYmkuZ2l0aHViLmlv"};
+  window.canonical["param"] = {"permalink":"https://yulin-bi.github.io/2026/07/23/llm_study2/","checklink":"/js/plugins/video.js"};
+  // Fix: Ensure page is at the correct top position on data load
+  if (history.scrollRestoration) {
+    history.scrollRestoration = 'auto';
+  }
+  (function() {
+    const scrollHandler = () => {
+      const wikiCover = document.querySelector('#l_cover .l_cover.wiki');
+      const startEl = document.getElementById('start');
+      if (wikiCover && startEl) {
+        window.scrollTo(0, startEl.offsetTop);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    };
+    if (document.readyState !== 'loading') scrollHandler();
+    else document.addEventListener('DOMContentLoaded', scrollHandler);
+  })();
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+    tag_plugins: {
+      chat: Object.assign({"api":"https://siteinfo.listentothewind.cn/api/v1"}),
+    }
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"post","path":"/search.json","content":true,"skip_search":null,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+    loading: `https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd`,
+  };
+  const deps = {
+    jquery: `https://gcore.jsdelivr.net/npm/jquery@3.7/dist/jquery.min.js`,
+    marked: `https://gcore.jsdelivr.net/npm/marked@13.0/lib/marked.umd.min.js`,
+    lazyload: `/%5Bobject%20Object%5D`
+  }
+</script>
+
+<script type="text/javascript">
+  
+  function RunItem() {
+    this.list = []; // 存放回调函数
+    this.start = () => {
+      for (var i = 0; i < this.list.length; i++) {
+        this.list[i].run();
+      }
+    };
+    this.push = (fn, name, setRequestAnimationFrame = true) => {
+      let myfn = fn
+      if (setRequestAnimationFrame) {
+        myfn = () => {
+          utils.requestAnimationFrame(fn)
+        }
+      }
+      var f = new Item(myfn, name);
+      this.list.push(f);
+    };
+    this.remove = (name) => {
+      // 倒序遍历避免 splice 后的索引问题
+      for (let index = this.list.length - 1; index >= 0; index--) {
+        const e = this.list[index];
+        if (e.name === name) {
+          this.list.splice(index, 1);
+        }
+      }
+    }
+    // 构造一个可以run的对象
+    function Item(fn, name) {
+      // 函数名称
+      this.name = name || fn.name;
+      // run方法
+      this.run = () => {
+        try {
+          fn()
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
+  }
+
+  const utils = {
+    // 已加载样式缓存
+    _loadedStyles: new Set(),
+
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      // 如果样式已加载，直接返回 null
+      if (utils._loadedStyles.has(href)) {
+        return null;
+      }
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      // 标记样式为已加载 (在创建元素后立即标记，防止重复创建)
+      utils._loadedStyles.add(href);
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 已加载脚本缓存
+    _loadedScripts: new Set(),
+
+    // 已加载元素缓存 (使用 WeakSet 追踪元素实例,避免 PJAX 导航时的状态混淆)
+    _loadedElements: new WeakSet(),
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      if (src.startsWith('/')) {
+        src = ctx.root + src.substring(1);
+      }
+      // 如果脚本已加载，直接返回
+      if (utils._loadedScripts.has(src)) {
+        resolve();
+        return;
+      }
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function () {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        utils._loadedScripts.add(src);
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // PJAX 事件监听器管理
+    _pjaxListeners: new Set(),
+    
+    jq: (fn, pjax = true) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+      if (pjax && !fn._pjax_registered) {
+        document.addEventListener('pjax:complete', fn);
+        fn._pjax_registered = true;
+        utils._pjaxListeners.add(fn); // 追踪监听器以便清理
+      }
+    },
+    
+    // 清理所有 PJAX 事件监听器
+    cleanupPjaxListeners: () => {
+      utils._pjaxListeners.forEach(fn => {
+        document.removeEventListener('pjax:complete', fn);
+        fn._pjax_registered = false;
+      });
+      utils._pjaxListeners.clear();
+    },
+
+    onLoading: (el) => {
+      if (el) {
+        if ($(el).find('.loading-wrap').length === 0){
+          $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+        }
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      // 检查元素实例是否已加载 (而不是检查属性)
+      if (el && utils._loadedElements.has(el)) {
+        return;
+      }
+      const maxRetry = 3;
+      let retryCount = 0;
+
+      return new Promise((resolve, reject) => {
+        const load = () => {
+          utils.onLoading?.(el);
+
+          let timedOut = false;
+          const timeout = setTimeout(() => {
+            timedOut = true;
+            console.warn('[request] 超时:', url);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject('请求超时');
+            } else {
+              setTimeout(load, 1000);
+            }
+          }, 5000);
+
+          fetch(url).then(resp => {
+            if (timedOut) return;
+            clearTimeout(timeout);
+
+            if (!resp.ok) throw new Error('响应失败');
+            return resp;
+          }).then(data => {
+            if (timedOut) return;
+            // 标记元素实例为已加载
+            if (el) utils._loadedElements.add(el);
+            utils.onLoadSuccess?.(el);
+            callback(data);
+            resolve(data);
+          }).catch(err => {
+            clearTimeout(timeout);
+            console.warn('[request] 错误:', err);
+
+            if (++retryCount >= maxRetry) {
+              utils.onLoadFailure?.(el);
+              onFailure?.();
+              reject(err);
+            } else {
+              setTimeout(load, 1000);
+            }
+          });
+        };
+
+        load();
+      });
+    },
+    requestWithoutLoading: (url, options = {}, maxRetry = 2, timeout = 5000) => {
+      return new Promise((resolve, reject) => {
+        let retryCount = 0;
+
+        const tryRequest = () => {
+          let timedOut = false;
+          const timer = setTimeout(() => {
+            timedOut = true;
+            if (++retryCount > maxRetry) reject('timeout');
+            else tryRequest();
+          }, timeout);
+
+          fetch(url, options)
+            .then(resp => {
+              clearTimeout(timer);
+              if (!resp.ok) throw new Error('bad response');
+              resolve(resp);
+            })
+            .catch(err => {
+              clearTimeout(timer);
+              if (++retryCount > maxRetry) reject(err);
+              else setTimeout(tryRequest, 500);
+            });
+        };
+
+        tryRequest();
+      });
+    },
+    /********************** requestAnimationFrame ********************************/
+    // 1、requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率，一般来说，这个频率为每秒60帧。
+    // 2、在隐藏或不可见的元素中，requestAnimationFrame 将不会进行重绘或回流，这当然就意味着更少的的 cpu，gpu 和内存使用量。
+    requestAnimationFrame: (fn) => {
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      }
+      window.requestAnimationFrame(fn)
+    },
+    dark: {},
+
+    // 插件初始化管理器 - 统一处理 DOMContentLoaded 和 pjax:complete 事件
+    _pluginInitializers: [],
+    _pluginCleanups: new Map(), // 存储每个插件的清理函数
+    
+    initPlugin: (initFn, name, options = {}) => {
+      if (!initFn || typeof initFn !== 'function') return;
+      
+      // 避免重复注册
+      const pluginName = name || initFn.name;
+      if (utils._pluginInitializers.some(p => p.name === pluginName)) return;
+      
+      // 包装初始化函数，添加防重复执行的保护
+      const wrappedInit = () => {
+        try {
+          // 在执行前先清理旧的资源
+          if (utils._pluginCleanups.has(pluginName)) {
+            const cleanup = utils._pluginCleanups.get(pluginName);
+            if (typeof cleanup === 'function') {
+              cleanup();
+            }
+          }
+          
+          // 执行初始化，可能返回清理函数
+          const cleanup = initFn();
+          
+          // 如果初始化函数返回了清理函数，保存它
+          if (typeof cleanup === 'function') {
+            utils._pluginCleanups.set(pluginName, cleanup);
+          }
+        } catch (error) {
+          console.error(`[Plugin ${pluginName}] 初始化失败:`, error);
+        }
+      };
+      
+      utils._pluginInitializers.push({ 
+        fn: wrappedInit, 
+        name: pluginName,
+        options: options 
+      });
+      
+      // 如果 DOM 已经加载完成，立即执行
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        wrappedInit();
+      } else {
+        // 否则等待 DOMContentLoaded
+        window.addEventListener('DOMContentLoaded', wrappedInit, { once: true });
+      }
+    },
+
+    // 重新初始化所有插件（用于 PJAX 等场景）
+    reinitPlugins: () => {
+      utils._pluginInitializers.forEach(plugin => {
+        // 跳过标记为不需要重新初始化的插件
+        if (plugin.options.skipReinit) return;
+        
+        try {
+          plugin.fn();
+        } catch (error) {
+          console.error(`[Plugin ${plugin.name}] 重新初始化失败:`, error);
+        }
+      });
+    },
+    
+    // 清理所有插件资源
+    cleanupPlugins: () => {
+      utils._pluginCleanups.forEach((cleanup, name) => {
+        try {
+          cleanup();
+        } catch (error) {
+          console.error(`[Plugin ${name}] 清理失败:`, error);
+        }
+      });
+      utils._pluginCleanups.clear();
+    },
+    
+    // 清理所有资源（用于页面卸载或重置）
+    cleanupAll: () => {
+      utils.cleanupPlugins();
+      utils.cleanupPjaxListeners();
+    },
+  };
+
+  // 自动处理 PJAX 事件
+  document.addEventListener('pjax:before', () => {
+    // 在导航前清理旧的 PJAX 监听器（如果需要重新注册）
+    // 注意：这里不清理，因为监听器应该是持久的
+    // utils.cleanupPjaxListeners();
+  });
+  
+  document.addEventListener('pjax:complete', () => {
+    utils.reinitPlugins();
+  });
+
+  // utils.dark.mode 当前模式 dark or light
+  // utils.dark.toggle() 暗黑模式触发器
+  // utils.dark.push(callBack[,"callBackName"]) 传入触发器回调函数
+  utils.dark.method = {
+    toggle: new RunItem(),
+  };
+  utils.dark = Object.assign(utils.dark, {
+    push: utils.dark.method.toggle.push,
+  });
+</script>
+<script>
+  const sidebar = {
+    syncControls: () => {
+      const leftButton = document.querySelector('.leftbar-toggle');
+      const rightButton = document.querySelector('.rightbar-toggle');
+      if (leftButton) leftButton.setAttribute('aria-expanded', String(l_body?.hasAttribute('leftbar')));
+      if (rightButton) rightButton.setAttribute('aria-expanded', String(l_body?.hasAttribute('rightbar')));
+    },
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+        sidebar.syncControls();
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+        sidebar.syncControls();
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+        sidebar.syncControls();
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+<script async src="https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+    callback_loaded: (el) => {
+      el.classList.add('loaded');
+      const wrapper = el.closest('.lazy-box');
+      const icon = wrapper?.querySelector('.lazy-icon');
+      if (icon) icon.remove();
+    }
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+
+  window.wrapLazyloadImages = (container) => {
+    if (typeof container === 'string') {
+      container = document.querySelector(container);
+    }
+    if (!container) return;
+
+    const images = container.querySelectorAll('img');
+    images.forEach((img) => {
+      if (img.classList.contains('lazy')) return;
+
+      const src = img.getAttribute('src');
+      if (!src) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'lazy-box';
+
+      const newImg = img.cloneNode();
+      newImg.removeAttribute('src');
+      newImg.setAttribute('data-src', src);
+      newImg.classList.add('lazy');
+
+      const icon = document.createElement('div');
+      icon.className = 'lazy-icon';
+      if (def.loading) {
+        icon.style.backgroundImage = `url("${def.loading}")`;
+      }
+
+      wrapper.appendChild(newImg);
+      wrapper.appendChild(icon);
+
+      img.replaceWith(wrapper);
+    });
+
+    // 通知 LazyLoad 更新
+    if (window.lazyLoadInstance?.update) {
+      window.lazyLoadInstance.update();
+    }
+  }
+
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=20260720-1" defer></script>
+<script src="/js/home-chat.js?v=20260720-1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // applyThemeToGiscus(theme)
+  }
+
+  // FIXME: 这会导致无法使用 preferred_color_scheme 以外的主题
+  const applyThemeToGiscus = (theme) => {
+    // theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+    utils.dark.mode = newTheme === 'auto' ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : newTheme;
+    utils.dark.method.toggle.start();
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    } else {
+      utils.dark.mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    utils.dark.method.toggle.start();
+  })()
+</script>
+
+
+<!-- optional -->
+
+  <script>
+  (function() {
+    const lazyload = false;
+    
+    function initGiscus() {
+      const el = document.querySelector('#comments #giscus');
+      if (!el) return;
+      
+      function load_giscus() {
+        try {
+          el.innerHTML = '';
+        } catch (error) {
+          console.error(error);
+        }
+        const script = document.createElement('script');
+        script.async = true;
+        for (const key of Object.keys(el.attributes)) {
+          const attr = el.attributes[key];
+          if (['class', 'id'].includes(attr.name) === false) {
+            script.setAttribute(attr.name, attr.value);
+          }
+        }
+        el.appendChild(script);
+      }
+      
+      util.viewportLazyload(el, load_giscus, lazyload);
+    }
+    
+    // Store in global stellar namespace for PJAX reinitialization
+    window.stellar = window.stellar || {};
+    window.stellar.initComments = window.stellar.initComments || {};
+    window.stellar.initComments.giscus = initGiscus;
+    
+    // Initialize on page load
+    initGiscus();
+  })();
+</script>
+
+
+
+
+<script defer>
+  const initServices = () => {
+    // 用于存储需要清理的资源
+    let timers = [];
+    
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"rating":{"js":"/js/services/rating.js","api":"https://star-vote.xaox.cc/api/rating"},"vote":{"js":"/js/services/vote.js","api":"https://star-vote.xaox.cc/api/vote"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"friends_and_posts":{"js":"/js/services/friends_and_posts.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"},"voice":{"js":"/js/plugins/voice.js"},"video":{"js":"/js/plugins/video.js"},"download-file":{"js":"/js/plugins/download-file.js"},"twikoo":{"js":"/js/services/twikoo_latest_comment.js"},"waline":{"js":"/js/services/waline_latest_comment.js"},"artalk":{"js":"/js/services/artalk_latest_comment.js"},"giscus":{"js":"/js/services/giscus_latest_comment.js"},"contributors":{"edit_this_page":{"_posts/":null,"wiki/stellar/":"https://github.com/xaoxuu/hexo-theme-stellar-docs/blob/main/"},"js":"/js/services/contributors.js"},"rss":{"js":"/js/services/rss.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        const cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(cardlinks);
+          });
+        }
+      } else if (id == 'ghinfo') {
+        const els = document.querySelectorAll('.ds-ghinfo');
+        if (els.length > 0) {
+          utils.js(js, { defer: true });
+        }
+      } else if (id == 'voice') {
+        const voiceAudios = document.querySelectorAll('.voice>audio');
+        if (voiceAudios?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            createVoiceDom(voiceAudios);
+          });
+        }
+      } else if (id == 'video') {
+        const videos = document.querySelectorAll('.video>video');
+        if (videos?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            videoEvents(videos);
+          });
+        }
+      } else if (id == 'download-file') {
+        const files = document.querySelectorAll('.chat-file');
+        if (files?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            downloadFileEvent(files);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || id == 'memos' || id == 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          }, false);
+        }
+      }
+    }
+
+    // search
+    if (ctx.search && typeof searchFunc === 'function') {
+      const $inputArea = $("input#search-input");
+      if ($inputArea.length > 0 && !$inputArea[0]._searchInitialized) {
+        const path = ctx.search.path.startsWith('/') ? ctx.root + ctx.search.path.substring(1) : ctx.root + ctx.search.path;
+        const filter = $inputArea.attr('data-filter') || '';
+        searchFunc(path, filter, 'search-wrapper', 'search-input', 'search-result');
+        // 标记为已初始化，防止重复绑定
+        $inputArea[0]._searchInitialized = true;
+      }
+    }
+
+    // chat iphone time
+    let phoneTimes = document.querySelectorAll('.chat .status-bar .time');
+    let firstAdjustInterval = null;
+    let mainInterval = null;
+
+    if (phoneTimes.length > 0) {
+      NowTime();
+      const date = new Date();
+      const sec = date.getSeconds();
+      firstAdjustInterval = setInterval(firstAdjustTime, 1000 * (60 - sec));
+      timers.push(firstAdjustInterval);
+
+      function firstAdjustTime() {
+        NowTime();
+        if (firstAdjustInterval) {
+          clearInterval(firstAdjustInterval);
+          firstAdjustInterval = null;
+        }
+        mainInterval = setInterval(NowTime, 1000 * 60);
+        timers.push(mainInterval);
+      }
+
+      function NowTime() {
+        for (let i = 0; i < phoneTimes.length; ++i) {
+          const timeSpan = phoneTimes[i];
+          const date = new Date();
+          const hour = date.getHours();
+          const min = date.getMinutes();
+          timeSpan.innerHTML = check(hour) + ":" + check(min);
+        }
+      };
+
+      function check(val) {
+        if (val < 10) {
+          return ("0" + val);
+        }
+        return (val);
+      }
+    }
+
+    // chat quote - 存储事件监听器以便清理
+    const quoteClickHandlers = new Map();
+    const chat_quote_obverser = new IntersectionObserver((entries, observer) => {
+      entries.filter((entry) => { return entry.isIntersecting }).sort((a, b) => a.intersectionRect.y !== b.intersectionRect.y ? a.intersectionRect.y - b.intersectionRect.y : a.intersectionRect.x - b.intersectionRect.x).forEach((entry, index) => {
+          observer.unobserve(entry.target);
+          setTimeout(() => {
+            entry.target.classList.add('quote-blink');
+            setTimeout(() => {
+              entry.target.classList.remove('quote-blink');
+            }, 1000);
+          }, Math.max(100, 16) * (index + 1));
+        });
+    });
+
+    var chatQuotes = document.querySelectorAll(".chat .talk .quote");
+    chatQuotes.forEach((quote) => {
+      const handler = function () {
+        var chatCellDom = document.getElementById("quote-" + quote.getAttribute("quotedCellTag"));
+        if (chatCellDom) {
+          var chatDiv = chatCellDom.parentElement;
+          var mid = chatDiv.clientHeight / 2;
+          var offsetTop = chatCellDom.offsetTop;
+          if (offsetTop > mid - chatCellDom.clientHeight / 2) {
+            chatDiv.scrollTo({
+              top: chatCellDom.offsetTop - mid + chatCellDom.clientHeight / 2,
+              behavior: "smooth"
+            });
+          } else {
+            chatDiv.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          }
+          chat_quote_obverser.observe(chatCellDom);
+        }
+      };
+      quote.addEventListener('click', handler);
+      quoteClickHandlers.set(quote, handler); // 保存处理器引用
+    });
+
+    // 返回清理函数，用于清理定时器和观察器
+    return () => {
+      // 清理所有定时器（包括可能未完成的 firstAdjustInterval）
+      timers.forEach(timer => {
+        if (timer) clearInterval(timer);
+      });
+      timers = [];
+      if (firstAdjustInterval) {
+        clearInterval(firstAdjustInterval);
+        firstAdjustInterval = null;
+      }
+      if (mainInterval) {
+        clearInterval(mainInterval);
+        mainInterval = null;
+      }
+      
+      // 断开观察器
+      if (chat_quote_obverser) {
+        chat_quote_obverser.disconnect();
+      }
+      
+      // 移除所有 click 事件监听器
+      quoteClickHandlers.forEach((handler, quote) => {
+        quote.removeEventListener('click', handler);
+      });
+      quoteClickHandlers.clear();
+    };
+  };
+
+  utils.initPlugin(initServices, 'services');
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://gcore.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css" integrity="sha384-//SZkxyB7axjCAopkAL1E1rve+ZSPKapD89Lo/lLhcsXR+zOYl5z6zJZEFXil+q0" crossorigin="anonymous">
+<script>
+  utils.initPlugin(() => {
+    const codeElements = document.querySelectorAll('.code');
+    if (codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js', { defer: true }).then(() => {
+        if (typeof createCopyButtons === 'function') {
+          createCopyButtons(codeElements);
+        }
+      });
+    }
+  }, 'copycode');
+</script>
+
+
+<!-- inject -->
+
+</div><div class="page-loading-bar"><img src="https://api.iconify.design/eos-icons:three-dots-loading.svg?color=%231cd0fd"></div></body></html>

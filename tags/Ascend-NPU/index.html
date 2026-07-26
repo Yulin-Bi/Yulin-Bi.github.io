@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
-  <link rel="canonical" href="https://yulin-bi.github.io/archives/2026/">
+  <link rel="canonical" href="https://yulin-bi.github.io/tags/Ascend-NPU/">
   <meta name="robots" content="noindex,follow">
   <meta name="generator" content="Hexo 8.1.2">
   <meta http-equiv='x-dns-prefetch-control' content='on' />
@@ -17,13 +17,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
-  <title>归档 - lin的博客</title>
+  <title>标签：Ascend NPU - lin的博客</title>
 
   
     <meta name="description" content="知识分享和个人记录">
 <meta property="og:type" content="website">
-<meta property="og:title" content="归档">
-<meta property="og:url" content="https://yulin-bi.github.io/archives/2026/">
+<meta property="og:title" content="lin的博客">
+<meta property="og:url" content="https://yulin-bi.github.io/tags/Ascend-NPU/">
 <meta property="og:site_name" content="lin的博客">
 <meta property="og:description" content="知识分享和个人记录">
 <meta property="og:locale" content="zh_CN">
@@ -69,7 +69,78 @@
  
 
 
-<div class="navbar top"><div class="navbar-blur"><div class="navbar-container"><nav class="post"><a href="/">近期发布</a><a href="/categories/">分类</a><a href="/tags/">标签</a><a class="active" href="/archives/">归档</a><a href="/resume/">个人简历</a></nav></div></div></div><div class="post-list archives"><article class="" id="archive"><div class='archive-header h4'>2026</div><div class="archive-list"><a class='post fs14' href="/2026/07/23/llm_study2/"><time>07-23</time><span>PyTorch 从模型训推到底层优化简介</span></a></div><div class="archive-list"><a class='post fs14' href="/2026/07/18/llm_study1/"><time>07-18</time><span>Transformer 简介</span></a></div><div class="archive-list"><a class='post fs14' href="/2026/06/07/RocketMq/"><time>06-07</time><span>RocketMQ 知识点整理</span></a></div><div class="archive-list"><a class='post fs14' href="/2026/05/26/hello-world/"><time>05-26</time><span>第一篇博客</span></a></div></article></div>
+<section id="latest-posts" class="home-feed" aria-label="最新文章">
+  
+
+<div class="navbar top"><div class="navbar-blur"><div class="navbar-container"><nav class="post"><a href="/">近期发布</a><a href="/categories/">分类</a><a class="active" href="/tags/">标签：Ascend NPU</a><a href="/archives/">归档</a><a href="/resume/">个人简历</a></nav></div></div></div>
+  <div class="post-list post"><div class="post-card-wrap"><a class="post-card post" href="/2026/07/23/llm_study2/">
+<article class="md-text"><h2 class="post-title">PyTorch 从模型训推到底层优化简介</h2><div class="excerpt"><p> 一、Autograd 及基本概念
+PyTorch 训练中最核心的自动求导机制是 Autograd。
+模型训练的基本过程：先用参数做前向计算得到预测值，再根据预测值和真实值计算损失，然后调用 loss.backwa...</p></div><div class="meta cap"><span class="cap" id="post-meta"><svg style="margin-bottom:2px" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M6.94 2c.416 0 .753.324.753.724v1.46c.668-.012 1.417-.012 2.26-.012h4.015c.842 0 1.591 0 2.259.013v-1.46c0-.4.337-.725.753-.725s.753.324.753.724V4.25c1.445.111 2.394.384 3.09 1.055c.698.67.982 1.582 1.097 2.972L22 9H2v-.724c.116-1.39.4-2.302 1.097-2.972c.697-.67 1.645-.944 3.09-1.055V2.724c0-.4.337-.724.753-.724"/><path fill="currentColor" d="M22 14v-2c0-.839-.004-2.335-.017-3H2.01c-.013.665-.01 2.161-.01 3v2c0 3.771 0 5.657 1.172 6.828C4.343 22 6.228 22 10 22h4c3.77 0 5.656 0 6.828-1.172C22 19.658 22 17.772 22 14" opacity=".5"/><path fill="currentColor" d="M18 17a1 1 0 1 1-2 0a1 1 0 0 1 2 0m0-4a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-5 4a1 1 0 1 1-2 0a1 1 0 0 1 2 0m0-4a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-5 4a1 1 0 1 1-2 0a1 1 0 0 1 2 0m0-4a1 1 0 1 1-2 0a1 1 0 0 1 2 0"/></svg><time datetime="2026-07-23T04:00:00.000Z">2026-07-23</time></span><span class="cap breadcrumb"><svg style="margin-bottom:1px" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77c.079.07.154.145.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828C19.657 22 17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172C2 19.657 2 17.771 2 14z" opacity=".5"/><path fill="currentColor" d="M20 6.238c0-.298-.005-.475-.025-.63a3 3 0 0 0-2.583-2.582C17.197 3 16.965 3 16.5 3H9.988c.116.104.247.234.462.45L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .849.352C14.098 6 14.675 6 15.829 6h.373c1.78 0 2.957 0 3.798.238"/><path fill="currentColor" fill-rule="evenodd" d="M12.25 10a.75.75 0 0 1 .75-.75h5a.75.75 0 0 1 0 1.5h-5a.75.75 0 0 1-.75-.75" clip-rule="evenodd"/></svg><span>大模型基础知识</span></span></div></article>
+</a></div></div>
+  
+
+</section>
+
+<div class="home-chat" data-home-chat data-chat-avatar="/images/01.jpg">
+  <button class="home-chat-launcher" type="button" aria-label="打开快捷聊天" aria-controls="home-chat-panel" aria-expanded="false">
+    <span class="home-chat-launcher-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5.2 5.5A2.7 2.7 0 0 1 7.9 2.8h8.2a2.7 2.7 0 0 1 2.7 2.7v6.1a2.7 2.7 0 0 1-2.7 2.7h-4.8l-3.9 3.1.8-3.1h-.3a2.7 2.7 0 0 1-2.7-2.7V5.5Z"/><path d="M8.2 7.1h7.6M8.2 10.1h5.1"/></svg>
+    </span>
+    <span class="home-chat-launcher-text">和我聊聊</span>
+    <span class="home-chat-unread" aria-hidden="true">1</span>
+  </button>
+
+  <section class="home-chat-panel" id="home-chat-panel" role="dialog" aria-modal="false" aria-labelledby="home-chat-title" hidden>
+    <header class="home-chat-header">
+      <img no-lazy class="home-chat-avatar" src="/images/01.jpg" alt="毕钰林的头像" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';">
+      <div>
+        <h2 id="home-chat-title">毕钰林</h2>
+        <p><span aria-hidden="true"></span>在线</p>
+      </div>
+      <button class="home-chat-close" type="button" aria-label="关闭快捷聊天">×</button>
+    </header>
+
+    <div class="home-chat-conversation" data-chat-view>
+      <div class="home-chat-messages" aria-live="polite">
+        <div class="home-chat-day">今天</div>
+        <div class="home-chat-row bot">
+          <img no-lazy class="home-chat-mini-avatar" src="/images/01.jpg" alt="" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';">
+          <div class="home-chat-bubble">嗨，欢迎来到我的博客。你可以了解我、查看项目和文章，或者直接给我留言。</div>
+        </div>
+      </div>
+
+      <div class="home-chat-options" aria-label="快捷对话">
+        <button class="home-chat-option" type="button" data-chat-topic="about">关于我</button>
+        <button class="home-chat-option" type="button" data-chat-topic="message">留言</button>
+        <form class="home-chat-form">
+          <label class="home-chat-input-label" for="home-chat-input">输入聊天内容</label>
+          <input id="home-chat-input" name="message" type="text" maxlength="80" autocomplete="off" placeholder="试试输入：简历、项目、文章、留言…">
+          <button class="home-chat-send" type="submit" aria-label="发送">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 8-16 8 3-8-3-8Z"/><path d="M7 12h13"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="home-chat-comment-view" data-comment-view hidden>
+      <div class="home-chat-comment-toolbar">
+        <button class="home-chat-comment-back" type="button" data-comment-back aria-label="返回聊天">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          <span>返回聊天</span>
+        </button>
+        <strong>留言板</strong>
+        <a href="/about/#comments" aria-label="在完整留言板中打开">完整页面</a>
+      </div>
+      <div class="home-chat-comment-scroll">
+        <p class="home-chat-comment-tip"><span aria-hidden="true"></span>留言会公开保存到 GitHub Discussions；未登录时可在下方完成授权。</p>
+        <div class="home-chat-giscus giscus" data-chat-giscus src="https://giscus.app/client.js" data-repo="Yulin-Bi/Yulin-Bi.github.io" data-repo-id="R_kgDOSoHXbg" data-category="Announcements" data-category-id="DIC_kwDOSoHXbs4DBjuW" data-mapping="specific" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="zh-CN" crossorigin="anonymous" data-term="about/"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
 
 <footer class="page-footer footnote"><hr><div class="text"><p>© 2026 毕钰林 by Stellar</p>
 </div></footer>

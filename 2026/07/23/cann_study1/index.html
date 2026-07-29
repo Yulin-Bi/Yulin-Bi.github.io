@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.33.1" theme-name="Stellar" theme-version="1.33.1">
-  <link rel="canonical" href="https://yulin-bi.github.io/2026/07/18/llm_study1/">
+  <link rel="canonical" href="https://yulin-bi.github.io/2026/07/23/cann_study1/">
   
   <meta name="generator" content="Hexo 8.1.2">
   <meta http-equiv='x-dns-prefetch-control' content='on' />
@@ -17,25 +17,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
-  <title>Transformer 简介 - lin的博客</title>
+  <title>CANN AutoFuse 基础（一）：专业术语基础总结 - lin的博客</title>
 
   
-    <meta name="description" content="一、核心定位与起源    项目 内容     提出时间 2017年6月   提出团队 Google Brain   核心论文 《Attention Is All You Need》   原始用途 序列到序列（Sequence-to-Sequence）任务（如机器翻译）   革命性突破 用自注意力取代循环结构，实现并行计算与长程依赖捕捉    Transformer 诞生前，NLP 领域主要依赖">
+    <meta name="description" content="一、项目定位与内容范围 Graph-autofusion 是面向昇腾平台的算子与 Kernel 融合优化项目。本节集中说明项目涉及的基础数据结构、Host&#x2F;Device 执行边界、昇腾 AI Core 的计算与存储单元，以及单个 Tile 在片上流水中的执行过程。 技术内容包括：  Tensor、Shape、Rank、Stride、Tile、Tiling、Host、Kernel 等基础术语。 G">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Transformer 简介">
-<meta property="og:url" content="https://yulin-bi.github.io/2026/07/18/llm_study1/">
+<meta property="og:title" content="CANN AutoFuse 基础（一）：专业术语基础总结">
+<meta property="og:url" content="https://yulin-bi.github.io/2026/07/23/cann_study1/">
 <meta property="og:site_name" content="lin的博客">
-<meta property="og:description" content="一、核心定位与起源    项目 内容     提出时间 2017年6月   提出团队 Google Brain   核心论文 《Attention Is All You Need》   原始用途 序列到序列（Sequence-to-Sequence）任务（如机器翻译）   革命性突破 用自注意力取代循环结构，实现并行计算与长程依赖捕捉    Transformer 诞生前，NLP 领域主要依赖">
+<meta property="og:description" content="一、项目定位与内容范围 Graph-autofusion 是面向昇腾平台的算子与 Kernel 融合优化项目。本节集中说明项目涉及的基础数据结构、Host&#x2F;Device 执行边界、昇腾 AI Core 的计算与存储单元，以及单个 Tile 在片上流水中的执行过程。 技术内容包括：  Tensor、Shape、Rank、Stride、Tile、Tiling、Host、Kernel 等基础术语。 G">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-07-18T04:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-19T17:07:08.835Z">
+<meta property="og:image" content="https://yulin-bi.github.io/images/cann-study1/01-double-buffer-pipeline.png">
+<meta property="article:published_time" content="2026-07-23T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-29T08:32:43.703Z">
 <meta property="article:author" content="毕钰林">
-<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="Ascend C">
+<meta property="article:tag" content="Ascend NPU">
+<meta property="article:tag" content="AutoFuse">
+<meta property="article:tag" content="CANN">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yulin-bi.github.io/images/cann-study1/01-double-buffer-pipeline.png">
   
   
   
-  <meta name="keywords" content="Transformer">
+  <meta name="keywords" content="CANN,AutoFuse,Ascend NPU,Ascend C">
 
   <!-- feed -->
   
@@ -47,7 +52,7 @@
 
   
 
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"dateCreated":"2026-07-18T12:00:00+08:00","dateModified":"2026-07-20T01:07:08+08:00","datePublished":"2026-07-18T12:00:00+08:00","description":"","headline":"Transformer 简介","mainEntityOfPage":{"@type":"WebPage","@id":"https://yulin-bi.github.io/2026/07/18/llm_study1/"},"publisher":{"@type":"Organization","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"url":"https://yulin-bi.github.io/2026/07/18/llm_study1/","keywords":"Transformer","image":[]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"dateCreated":"2026-07-23T12:00:00+08:00","dateModified":"2026-07-29T16:32:43+08:00","datePublished":"2026-07-23T12:00:00+08:00","description":"","headline":"CANN AutoFuse 基础（一）：专业术语基础总结","mainEntityOfPage":{"@type":"WebPage","@id":"https://yulin-bi.github.io/2026/07/23/cann_study1/"},"publisher":{"@type":"Organization","name":"毕钰林","sameAs":["https://github.com/Yulin-Bi"]},"url":"https://yulin-bi.github.io/2026/07/23/cann_study1/","keywords":"CANN, AutoFuse, Ascend NPU, Ascend C","image":[]}</script>
   
 </head>
 <body><a class="skip-link" href="#main">跳到主要内容</a><div id="l_cover"></div><div class="l_body content" id="start" layout="post" type="tech" ><aside class="l_left" id="leftbar" aria-label="站点侧栏"><div class="sidebg"></div><div class="leftbar-container">
@@ -76,231 +81,449 @@
 <div class="article banner top">
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
-<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">大模型基础知识</a></div>
-<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-07-18T04:00:00.000Z">2026-07-18</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-07-19T17:07:08.835Z">2026-07-20</time></span></div></div></div>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%98%87%E8%85%BE%E4%B8%8E%E7%AE%97%E5%AD%90%E4%BC%98%E5%8C%96/">昇腾与算子优化</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2026-07-23T04:00:00.000Z">2026-07-23</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-07-29T08:32:43.703Z">2026-07-29</time></span></div></div></div>
     
     <div class="bottom only-title">
       
       <div class="text-area">
-        <h1 class="text title"><span>Transformer 简介</span></h1>
+        <h1 class="text title"><span>CANN AutoFuse 基础（一）：专业术语基础总结</span></h1>
         
       </div>
     </div>
     
   </div>
-  </div><article class="md-text content"><h2 id="一-核心定位与起源"><a class="markdownIt-Anchor" href="#一-核心定位与起源"></a> 一、核心定位与起源</h2>
+  </div><article class="md-text content"><h2 id="一-项目定位与内容范围"><a class="markdownIt-Anchor" href="#一-项目定位与内容范围"></a> 一、项目定位与内容范围</h2>
+<p>Graph-autofusion 是面向昇腾平台的算子与 Kernel 融合优化项目。本节集中说明项目涉及的基础数据结构、Host/Device 执行边界、昇腾 AI Core 的计算与存储单元，以及单个 Tile 在片上流水中的执行过程。</p>
+<p>技术内容包括：</p>
+<ol>
+<li>Tensor、Shape、Rank、Stride、Tile、Tiling、Host、Kernel 等基础术语。</li>
+<li>GM、UB、MTE2、MTE3、Vector、Cube、AI Core 之间的数据与计算关系。</li>
+<li>TPipe、TQue、TBuf 对片上内存、缓冲槽和流水同步的抽象。</li>
+<li>单个 Tile 从 GM 搬入 UB、完成计算并写回 GM 的执行过程。</li>
+<li>AutoFuse 与 SuperKernel 所处的不同优化层级。</li>
+</ol>
+<p>Graph-autofusion 包含两条主要优化路线：</p>
+<ul>
+<li><strong>AutoFuse</strong>：重新分析融合图的轴、调度、Tiling 和片上内存，生成新的 Ascend C 融合 Kernel。</li>
+<li><strong>SuperKernel</strong>：组合已有子 Kernel，减少多次加载、下发和同步带来的调度开销。</li>
+</ul>
+<hr />
+<h2 id="二-基础名词"><a class="markdownIt-Anchor" href="#二-基础名词"></a> 二、基础名词</h2>
+<h3 id="1-host-device-与-runtime"><a class="markdownIt-Anchor" href="#1-host-device-与-runtime"></a> 1. Host、Device 与 Runtime</h3>
 <table>
 <thead>
 <tr>
-<th style="text-align:left">项目</th>
-<th style="text-align:left">内容</th>
+<th>名词</th>
+<th>含义</th>
+<th>在项目中的作用</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left"><strong>提出时间</strong></td>
-<td style="text-align:left">2017年6月</td>
+<td>Host</td>
+<td>主机侧，通常是运行 Python/C++ 程序的 CPU</td>
+<td>捕获/构造图、计算 Tiling、编译 Kernel、准备参数并发起 Kernel Launch</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>提出团队</strong></td>
-<td style="text-align:left">Google Brain</td>
+<td>Device</td>
+<td>设备侧，即昇腾 NPU</td>
+<td>执行编译后的 Kernel，进行数据搬运和计算</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>核心论文</strong></td>
-<td style="text-align:left">《Attention Is All You Need》</td>
+<td>Runtime</td>
+<td>连接 Host 与 Device 的运行时软件</td>
+<td>管理设备、Stream、内存、Kernel 加载和下发；项目依赖 CANN Runtime/ACL</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>原始用途</strong></td>
-<td style="text-align:left">序列到序列（Sequence-to-Sequence）任务（如机器翻译）</td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>革命性突破</strong></td>
-<td style="text-align:left">用自注意力取代循环结构，实现并行计算与长程依赖捕捉</td>
+<td>Stream</td>
+<td>Device 任务的有序执行队列</td>
+<td>同一 Stream 内的任务通常按依赖顺序执行，也可以使用多个 Stream 表达并发</td>
 </tr>
 </tbody>
 </table>
-<p>Transformer 诞生前，NLP 领域主要依赖 RNN/LSTM 处理序列数据，但存在三大局限：</p>
+<p>Host 和 Device 的基本关系是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Host</span><br><span class="line">构图、Tiling、编译、申请内存、准备参数</span><br><span class="line">    ↓ Kernel Launch</span><br><span class="line">Device</span><br><span class="line">搬入数据、执行计算、搬出结果</span><br></pre></td></tr></table></figure>
+<h3 id="2-tensor-shape-rank-dimension-batch"><a class="markdownIt-Anchor" href="#2-tensor-shape-rank-dimension-batch"></a> 2. Tensor、Shape、Rank、Dimension、Batch</h3>
+<h4 id="tensor"><a class="markdownIt-Anchor" href="#tensor"></a> Tensor</h4>
+<p>Tensor 是多维数组，也是神经网络中数据的主要表示。例如一张 RGB 图片可以表示为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[C, H, W] = [3, 224, 224]</span><br></pre></td></tr></table></figure>
+<p>多张图片组成一个 Batch 后可以表示为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[N, C, H, W] = [32, 3, 224, 224]</span><br></pre></td></tr></table></figure>
+<h4 id="shape"><a class="markdownIt-Anchor" href="#shape"></a> Shape</h4>
+<p>Shape 描述 Tensor 每个维度的大小。例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shape = [32, 3, 224, 224]</span><br></pre></td></tr></table></figure>
+<p>表示这是一个四维 Tensor。</p>
+<h4 id="rank"><a class="markdownIt-Anchor" href="#rank"></a> Rank</h4>
+<p>Rank 是 Tensor 的维度数量。上例 Rank 为 4。</p>
+<h4 id="dimensiondim"><a class="markdownIt-Anchor" href="#dimensiondim"></a> Dimension/Dim</h4>
+<p>Dimension 是某一个具体维度，例如 <code>dim=0</code> 表示 Batch 维，<code>dim=1</code> 表示 Channel 维。不同算子对维度含义的解释可能不同。</p>
+<h4 id="batch"><a class="markdownIt-Anchor" href="#batch"></a> Batch</h4>
+<p>Batch 表示一次并行处理的样本数量。增大 Batch 通常能提高硬件利用率，但也会增加显存占用和单次计算量。</p>
+<h4 id="dtype"><a class="markdownIt-Anchor" href="#dtype"></a> DType</h4>
+<p>DType 是数据类型，例如 <code>float32</code>、<code>float16</code>、<code>bfloat16</code>、<code>int32</code>、<code>bool</code>。数据类型影响：</p>
+<ul>
+<li>每个元素占用的字节数；</li>
+<li>UB 中一次能放多少元素；</li>
+<li>Vector/Cube 指令是否支持；</li>
+<li>计算速度、精度和对齐要求。</li>
+</ul>
+<h4 id="layout-stride"><a class="markdownIt-Anchor" href="#layout-stride"></a> Layout、Stride</h4>
+<p>Layout 是 Tensor 的数据排布方式，例如 NCHW、NHWC、ND、NZ。</p>
+<p>Stride 描述某个维度的索引增加 1 时，实际内存地址跨过多少元素。例如连续的 <code>[B, M, N]</code> Tensor，其 stride 通常近似为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[M*N, N, 1]</span><br></pre></td></tr></table></figure>
+<p>Stride 是 AutoFuse 判断连续访存、Broadcast 和 Reduce 轴的重要依据。</p>
+<h3 id="3-operator-kernel-与计算图"><a class="markdownIt-Anchor" href="#3-operator-kernel-与计算图"></a> 3. Operator、Kernel 与计算图</h3>
+<h4 id="operator算子"><a class="markdownIt-Anchor" href="#operator算子"></a> Operator/算子</h4>
+<p>算子是语义层面的计算，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add、Abs、Exp、ReduceSum、MatMul、Softmax</span><br></pre></td></tr></table></figure>
+<h4 id="kernel"><a class="markdownIt-Anchor" href="#kernel"></a> Kernel</h4>
+<p>Kernel 是在 Device 上执行的一段具体程序，也是 Runtime 下发任务的基本单位之一。</p>
+<p>算子和 Kernel 不一定一一对应：</p>
+<ul>
+<li>一个算子可能被实现为一个或多个 Kernel；</li>
+<li>多个算子也可以融合成一个 Kernel；</li>
+<li>同一个算子在不同 Shape、DType、硬件型号下可能使用不同 Kernel。</li>
+</ul>
+<h4 id="计算图"><a class="markdownIt-Anchor" href="#计算图"></a> 计算图</h4>
+<p>计算图用节点和边表示计算：</p>
+<ul>
+<li>节点：算子；</li>
+<li>边：Tensor 和数据依赖；</li>
+<li>拓扑顺序：必须满足的执行先后关系。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x ─┐</span><br><span class="line">   Add → Abs → ReduceSum → output</span><br><span class="line">y ─┘</span><br></pre></td></tr></table></figure>
+<h3 id="4-tile-tiling-block"><a class="markdownIt-Anchor" href="#4-tile-tiling-block"></a> 4. Tile、Tiling、Block</h3>
+<h4 id="tile"><a class="markdownIt-Anchor" href="#tile"></a> Tile</h4>
+<p>完整 Tensor 往往无法一次放进片上存储，因此要切成小块，每个小块就是 Tile。</p>
+<p>例如长度为 4096 的向量，每次在 UB 中处理 512 个元素：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">完整数据：4096</span><br><span class="line">Tile 大小：512</span><br><span class="line">Tile 数量：8</span><br></pre></td></tr></table></figure>
+<h4 id="tiling"><a class="markdownIt-Anchor" href="#tiling"></a> Tiling</h4>
+<p>Tiling 是确定如何切块的过程，包括：</p>
+<ul>
+<li>沿哪一根轴切；</li>
+<li>每块大小是多少；</li>
+<li>每个核处理哪些块；</li>
+<li>Reduce 轴怎样分块；</li>
+<li>是否需要尾块处理；</li>
+<li>是否使用 Double Buffer；</li>
+<li>是否需要多个候选方案。</li>
+</ul>
+<p>Shape 描述“完整问题有多大”，Tiling 描述“怎样把完整问题拆成硬件能高效处理的小任务”。</p>
+<h4 id="tiling-data"><a class="markdownIt-Anchor" href="#tiling-data"></a> Tiling Data</h4>
+<p>Tiling Data 是 Host 根据运行时 Shape、硬件资源和调度方案计算出来的参数，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tile_size</span><br><span class="line">tile_num</span><br><span class="line">tail_size</span><br><span class="line">block_dim</span><br><span class="line">reduce_size</span><br><span class="line">workspace_size</span><br></pre></td></tr></table></figure>
+<p>这些参数会传给 Device Kernel，用于控制循环和地址计算。</p>
+<h4 id="block"><a class="markdownIt-Anchor" href="#block"></a> Block</h4>
+<p>项目中 Block 一词可能有两种语境：</p>
 <ol>
-<li><strong>串行计算：</strong> 必须逐词处理，无法并行，训练效率低</li>
-<li><strong>长距离依赖：</strong> 信息传递存在损耗，难以捕捉远距离语义关联</li>
-<li><strong>线性复杂度高：</strong> 随序列长度增长呈二次复杂度</li>
+<li>数据分块，即广义的 Tile/Block；</li>
+<li>多核调度中的 Block，通常对应一个 AI Core/AIV/AIC 执行任务。</li>
 </ol>
-<hr />
-<h2 id="二-整体架构编码器-解码器框架"><a class="markdownIt-Anchor" href="#二-整体架构编码器-解码器框架"></a> 二、整体架构：编码器-解码器框架</h2>
-<p>Transformer 基本架构由**编码器（Encoder）和解码器（Decoder）**两部分组成，原论文中均使用 6 层堆叠结构。</p>
-<h3 id="21-编码器-encoder输入理解模块"><a class="markdownIt-Anchor" href="#21-编码器-encoder输入理解模块"></a> 2.1 编码器 (Encoder)：输入理解模块</h3>
+<p>AutoSchedule 中的 <code>BlockSplit</code> 主要指第二种：把外层循环切分并绑定到多个核。</p>
+<h4 id="tile-split-与-block-split"><a class="markdownIt-Anchor" href="#tile-split-与-block-split"></a> Tile Split 与 Block Split</h4>
+<p>假设一根轴大小为 <code>M</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">TileSplit:</span><br><span class="line">M → Mo × Mi</span><br><span class="line"></span><br><span class="line">Mo：TileOuter，外层有多少块</span><br><span class="line">Mi：TileInner，每个核一次在 UB 中处理多少数据</span><br><span class="line"></span><br><span class="line">BlockSplit:</span><br><span class="line">Mo → Bo × Bi</span><br><span class="line"></span><br><span class="line">Bo：BlockOuter，绑定多核</span><br><span class="line">Bi：BlockInner，每个核内部继续处理的块</span><br></pre></td></tr></table></figure>
+<h3 id="5-pipeline-与-double-buffer"><a class="markdownIt-Anchor" href="#5-pipeline-与-double-buffer"></a> 5. Pipeline 与 Double Buffer</h3>
+<p>一次典型的 Vector Kernel 包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CopyIn → Compute → CopyOut</span><br></pre></td></tr></table></figure>
+<p>如果完全串行执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">搬入第1块 → 计算第1块 → 搬出第1块 → 搬入第2块 → ...</span><br></pre></td></tr></table></figure>
+<p>硬件单元之间会有空闲等待。通过流水并行和 Double Buffer，可以近似变成：</p>
+<p><img src="/images/cann-study1/01-double-buffer-pipeline.png" alt="Double Buffer Tile 流水重叠" /></p>
+<p>Double Buffer 并不保证性能提升。它把同类 Queue 的缓冲槽从一份增加到两份或多份，以便不同 Tile 的 CopyIn、Compute 和 CopyOut 重叠，但也会增加 UB 占用。</p>
+<p>UB 占用增加本身不必然直接增加执行时间；当它压缩了 TBuf、中间 Tensor 或其他 Queue 的可用空间，并迫使 Tile 变小时，会产生以下间接代价：</p>
 <ul>
-<li><strong>功能：</strong> 将输入序列转换为富含上下文信息的向量表示，负责“理解”输入内容</li>
-<li><strong>结构组成（每层包含）：</strong><br />
-a. <strong>多头自注意力层：</strong> 捕捉输入序列中所有位置间的依赖关系<br />
-b. <strong>前馈神经网络（FFN）：</strong> 对每个位置的特征进行独立非线性变换<br />
-c. <strong>残差连接：</strong> <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mi>a</mi><mi>y</mi><mi>e</mi><mi>r</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mi>x</mi><mo>+</mo><mi>S</mi><mi>u</mi><mi>b</mi><mi>l</mi><mi>a</mi><mi>y</mi><mi>e</mi><mi>r</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">Layer(x) = x + Sublayer(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="mord mathnormal">u</span><span class="mord mathnormal">b</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span></span></span></span>，解决深度网络梯度消失问题<br />
-d. <strong>层归一化（LayerNorm）：</strong> 加速训练，提高模型稳定性</li>
+<li>Tile 数量和外层循环次数增加；</li>
+<li>DataCopy、EnQue/DeQue 和尾块处理次数增加；</li>
+<li>单次搬运变小，带宽利用率可能下降；</li>
+<li>融合图的其他中间结果可能无法继续留在 UB；</li>
+<li>某些候选 Schedule 可能因 UB 不足而被淘汰。</li>
 </ul>
-<h3 id="22-解码器-decoder输出生成模块"><a class="markdownIt-Anchor" href="#22-解码器-decoder输出生成模块"></a> 2.2 解码器 (Decoder)：输出生成模块</h3>
-<ul>
-<li><strong>功能：</strong> 基于编码器输出和已生成序列，自回归生成目标序列，负责“生成”输出内容</li>
-<li><strong>结构组成（在编码器基础上增加）：</strong><br />
-a. <strong>掩码多头自注意力层：</strong> 防止模型看到未来位置信息，保证生成的自回归特性<br />
-b. <strong>编码器-解码器注意力层：</strong> 让解码器关注编码器输出的相关部分（如机器翻译中源语言与目标语言的对应关系）</li>
-</ul>
-<h3 id="23-输入输出处理"><a class="markdownIt-Anchor" href="#23-输入输出处理"></a> 2.3 输入输出处理</h3>
-<ul>
-<li><strong>词嵌入（Embedding）：</strong> 将离散词元转换为连续向量表示</li>
-<li><strong>位置编码（Positional Encoding）：</strong> 注入序列位置信息（因自注意力无天然时序感知能力），原论文使用正弦/余弦函数实现</li>
-<li><strong>线性层+Softmax：</strong> 将解码器输出映射为概率分布，生成最终预测结果</li>
-</ul>
-<hr />
-<h2 id="三-核心机制自注意力与多头注意力"><a class="markdownIt-Anchor" href="#三-核心机制自注意力与多头注意力"></a> 三、核心机制：自注意力与多头注意力</h2>
-<h3 id="31-自注意力-self-attention模型的灵魂"><a class="markdownIt-Anchor" href="#31-自注意力-self-attention模型的灵魂"></a> 3.1 自注意力 (Self-Attention)：模型的&quot;灵魂&quot;</h3>
-<p>自注意力机制让每个位置能&quot;关注&quot;序列中所有其他位置，计算过程分为 4 步：</p>
-<ol>
-<li>
-<p><strong>生成 QKV 矩阵：</strong> 通过线性变换将输入向量转换为三个矩阵</p>
-<ul>
-<li><strong>Q (Query)：</strong> 查询向量，当前位置要&quot;查询&quot;的信息</li>
-<li><strong>K (Key)：</strong> 键向量，其他位置提供的&quot;信息标识&quot;</li>
-<li><strong>V (Value)：</strong> 值向量，其他位置提供的&quot;具体信息内容&quot;</li>
-</ul>
-</li>
-<li>
-<p><strong>计算注意力分数：</strong> 通过 Q 与 K 的点积计算相似度</p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Scores</mtext><mo>=</mo><mfrac><mrow><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup></mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac></mrow><annotation encoding="application/x-tex">\text{Scores} = \frac{Q K^T}{\sqrt{d_k}}
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord text"><span class="mord">Scores</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.448331em;vertical-align:-0.93em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5183309999999999em;"><span style="top:-2.25278em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.85722em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.81722em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
-c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
-c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
-c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
-s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
-c69,-144,104.5,-217.7,106.5,-221
-l0 -0
-c5.3,-9.3,12,-14,20,-14
-H400000v40H845.2724
-s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
-c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
-M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.18278000000000005em;"><span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.93em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
-<ul>
-<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mrow><annotation encoding="application/x-tex">\sqrt{d_k}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.04em;vertical-align:-0.18278000000000005em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.85722em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.81722em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
-c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
-c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
-c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
-s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
-c69,-144,104.5,-217.7,106.5,-221
-l0 -0
-c5.3,-9.3,12,-14,20,-14
-H400000v40H845.2724
-s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
-c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
-M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.18278000000000005em;"><span></span></span></span></span></span></span></span></span> ：缩放因子，防止点积结果过大导致 Softmax 梯度消失</li>
-</ul>
-</li>
-<li>
-<p><strong>Softmax 归一化：</strong> 将分数转换为 0-1 权重，确保权重和为 1</p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Weights</mtext><mo>=</mo><mtext>Softmax</mtext><mo stretchy="false">(</mo><mtext>Scores</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{Weights} = \text{Softmax}(\text{Scores})
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">Weights</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Softmax</span></span><span class="mopen">(</span><span class="mord text"><span class="mord">Scores</span></span><span class="mclose">)</span></span></span></span></span></p>
-</li>
-<li>
-<p><strong>加权求和：</strong> 用注意力权重对 V 加权求和，得到最终注意力输出</p>
-<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Output</mtext><mo>=</mo><mtext>Weights</mtext><mo>×</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">\text{Output} = \text{Weights} \times V
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">Output</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">Weights</span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span></span></p>
-</li>
-</ol>
-<h3 id="32-多头注意力-multi-head-attention多角度特征捕捉"><a class="markdownIt-Anchor" href="#32-多头注意力-multi-head-attention多角度特征捕捉"></a> 3.2 多头注意力 (Multi-Head Attention)：多角度特征捕捉</h3>
-<ul>
-<li><strong>机制：</strong> 并行运行多个自注意力头，每个头学习不同类型的依赖关系，最后拼接输出并线性变换</li>
-<li><strong>优势：</strong><br />
-a. 捕捉多种语义关系（如句法依赖、语义关联等）<br />
-b. 提高模型表达能力，避免单一注意力头的局限性<br />
-c. 原论文使用 8 个注意力头，总维度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mtext>model</mtext></msub><mo>=</mo><mn>512</mn></mrow><annotation encoding="application/x-tex">d_{\text{model}}=512</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">model</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">5</span><span class="mord">1</span><span class="mord">2</span></span></span></span>，每个头维度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>k</mi></msub><mo>=</mo><msub><mi>d</mi><mi>v</mi></msub><mo>=</mo><mn>64</mn></mrow><annotation encoding="application/x-tex">d_k=d_v=64</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">6</span><span class="mord">4</span></span></span></span></li>
-</ul>
-<hr />
-<h2 id="四-工作流程以机器翻译为例"><a class="markdownIt-Anchor" href="#四-工作流程以机器翻译为例"></a> 四、工作流程：以机器翻译为例</h2>
-<ol>
-<li>
-<p><strong>输入处理：</strong> 英语句子 → 词嵌入 + 位置编码 → 编码器输入</p>
-</li>
-<li>
-<p><strong>编码器计算：</strong></p>
-<ul>
-<li>6 层编码器逐层处理，每层通过多头自注意力捕捉单词间关系（如&quot;love&quot;与&quot;you&quot;的关联）</li>
-<li>输出上下文向量表示，包含完整语义信息</li>
-</ul>
-</li>
-<li>
-<p><strong>解码器计算：</strong></p>
-<ul>
-<li><strong>初始化：</strong> 以特殊起始符 <code>&lt;SOS&gt;</code> 开始生成</li>
-<li><strong>掩码自注意力：</strong> 仅关注已生成单词（如 <code>&lt;SOS&gt;</code> ）</li>
-<li><strong>编码器-解码器注意力：</strong> 关注编码器输出中与当前生成位置相关的英语单词</li>
-<li>前馈网络处理后生成第一个法语单词</li>
-<li>循环此过程，直到生成结束符 <code>&lt;EOS&gt;</code></li>
-</ul>
-</li>
-<li>
-<p><strong>输出处理：</strong> 线性层+Softmax 生成概率分布，选择概率最高的单词作为输出</p>
-</li>
-</ol>
-<hr />
-<h2 id="五-核心优势超越传统模型的关键特性"><a class="markdownIt-Anchor" href="#五-核心优势超越传统模型的关键特性"></a> 五、核心优势：超越传统模型的关键特性</h2>
+<p>因此，Double Buffer 应作为 Tiling/Schedule 候选策略进行比较，而不是默认开启。是否启用取决于 Shape、DType、Tile 大小、融合图的临时 Buffer、SoC 的 UB 容量以及 MTE/Vector 各阶段耗时。</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:left">特性</th>
-<th style="text-align:left">Transformer</th>
-<th style="text-align:left">RNN/LSTM</th>
-<th style="text-align:left">优势说明</th>
+<th>场景</th>
+<th>Double Buffer 倾向</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left"><strong>计算方式</strong></td>
-<td style="text-align:left">并行计算</td>
-<td style="text-align:left">串行计算</td>
-<td style="text-align:left">大幅提升训练速度，充分利用 GPU 算力</td>
+<td>CopyIn/Compute/CopyOut 耗时接近，且 UB 充足</td>
+<td>开启后可能通过流水重叠降低耗时</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>长程依赖</strong></td>
-<td style="text-align:left">直接建模全局依赖</td>
-<td style="text-align:left">信息链式传递</td>
-<td style="text-align:left">无距离衰减，捕捉长文本语义关联更有效</td>
+<td>Compute 明显占主导，MTE 等待很少</td>
+<td>重叠收益有限</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>注意力机制</strong></td>
-<td style="text-align:left">显式计算注意力权重</td>
-<td style="text-align:left">隐式依赖隐藏状态</td>
-<td style="text-align:left">可解释性更强，能可视化模型关注重点</td>
+<td>Shape 很小、Tile 数量少</td>
+<td>初始化和队列管理开销可能无法摊薄</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>扩展性</strong></td>
-<td style="text-align:left">易于堆叠更深层</td>
-<td style="text-align:left">深层易梯度消失</td>
-<td style="text-align:left">支持构建千亿参数大模型（如 GPT-4）</td>
+<td>UB 紧张，开启后必须显著减小 Tile</td>
+<td>可能增加总耗时，应优先比较关闭方案</td>
 </tr>
 </tbody>
 </table>
+<p>最终应在相同输入和运行条件下比较开启/关闭方案的 Kernel 总耗时，并结合 UB 占用、Tile Size/Tile Num、MTE2/MTE3 时间和 Vector 时间确定选择。</p>
 <hr />
-<h2 id="六-变体与应用从-nlp-到多模态"><a class="markdownIt-Anchor" href="#六-变体与应用从-nlp-到多模态"></a> 六、变体与应用：从 NLP 到多模态</h2>
-<h3 id="61-三大主流变体"><a class="markdownIt-Anchor" href="#61-三大主流变体"></a> 6.1 三大主流变体</h3>
-<ol>
-<li><strong>纯编码器模型：</strong> 如 BERT (Bidirectional Encoder Representations from Transformers)，擅长理解类任务（文本分类、命名实体识别、问答等）</li>
-<li><strong>纯解码器模型：</strong> 如 GPT (Generative Pre-trained Transformer)，擅长生生成类任务（文本生成、对话、代码生成等），是现代大语言模型主流架构</li>
-<li><strong>编码器-解码器模型：</strong> 如 T5、BART，适用于序列到序列任务（机器翻译、文本摘要、文本改写等）</li>
-</ol>
-<h3 id="62-跨领域应用"><a class="markdownIt-Anchor" href="#62-跨领域应用"></a> 6.2 跨领域应用</h3>
+<h2 id="三-昇腾硬件和存储单元"><a class="markdownIt-Anchor" href="#三-昇腾硬件和存储单元"></a> 三、昇腾硬件和存储单元</h2>
+<p>不同昇腾 SoC 的物理组织、单元数量和能力存在差异，本节按照项目代码采用的逻辑抽象进行说明。</p>
+<h3 id="1-ai-core-aic-aiv"><a class="markdownIt-Anchor" href="#1-ai-core-aic-aiv"></a> 1. AI Core、AIC、AIV</h3>
+<table>
+<thead>
+<tr>
+<th>名词</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI Core/AICore</td>
+<td>昇腾 Device 上执行算子 Kernel 的主要计算核心统称</td>
+</tr>
+<tr>
+<td>AIC</td>
+<td>偏 Cube/矩阵计算的执行核心或 Kernel 侧</td>
+</tr>
+<tr>
+<td>AIV</td>
+<td>偏 Vector/向量计算的执行核心或 Kernel 侧</td>
+</tr>
+<tr>
+<td>Mix Kernel</td>
+<td>同时使用 Cube 和 Vector 计算能力的 Kernel</td>
+</tr>
+</tbody>
+</table>
+<p>项目中会区分 AIC-only、AIV-only、Mix 等 Kernel 类型。具体物理核比例随 SoC 不同，不能把某个型号的数量当作所有昇腾卡的固定规则。</p>
+<h3 id="2-gm-与-ub"><a class="markdownIt-Anchor" href="#2-gm-与-ub"></a> 2. GM 与 UB</h3>
+<h4 id="gmglobal-memory"><a class="markdownIt-Anchor" href="#gmglobal-memory"></a> GM：Global Memory</h4>
+<p>GM 是 Device 全局内存，通常对应 HBM/DDR 一类容量较大的外部存储。</p>
+<p>特点：</p>
 <ul>
-<li><strong>NLP 领域：</strong> 机器翻译、文本生成、情感分析、问答系统、对话机器人</li>
-<li><strong>计算机视觉：</strong> Vision Transformer (ViT) 将图像分割为 patch 序列处理，实现图像分类、目标检测等任务</li>
-<li><strong>多模态：</strong> CLIP、Flux 等模型融合文本与图像，实现跨模态检索、文生图等应用</li>
-<li><strong>语音处理：</strong> Speech Transformer 用于语音识别、语音合成等任务</li>
+<li>容量大；</li>
+<li>所有核可以访问；</li>
+<li>相比片上存储访问延迟更高、带宽更宝贵；</li>
+<li>Kernel 输入、输出通常位于 GM。</li>
 </ul>
+<h4 id="ubunified-buffer"><a class="markdownIt-Anchor" href="#ubunified-buffer"></a> UB：Unified Buffer</h4>
+<p>UB 是靠近计算单元的片上高速存储，Ascend C 中常通过 <code>LocalTensor</code> 使用。</p>
+<p>特点：</p>
+<ul>
+<li>容量远小于 GM；</li>
+<li>延迟低、适合 Vector 计算；</li>
+<li>通常需要显式规划和复用；</li>
+<li>Tile 大小必须受 UB 容量限制。</li>
+</ul>
+<p>AutoFuse 的核心目标之一，就是让中间结果尽量留在 UB 中，而不是每经过一个算子就写回 GM。</p>
+<h3 id="3-mte2-与-mte3"><a class="markdownIt-Anchor" href="#3-mte2-与-mte3"></a> 3. MTE2 与 MTE3</h3>
+<p>MTE 是 AI Core 数据通路中的搬运引擎。</p>
+<table>
+<thead>
+<tr>
+<th>单元</th>
+<th>在常见 Vector 数据流中的主要方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MTE2</td>
+<td>将输入数据从 GM 搬到 UB，即 CopyIn</td>
+</tr>
+<tr>
+<td>MTE3</td>
+<td>将输出数据从 UB 搬回 GM，即 CopyOut</td>
+</tr>
+</tbody>
+</table>
+<p>所以典型数据路径是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GM 输入</span><br><span class="line">  ↓ MTE2</span><br><span class="line">UB</span><br><span class="line">  ↓ Vector/Cube 计算</span><br><span class="line">UB 结果</span><br><span class="line">  ↓ MTE3</span><br><span class="line">GM 输出</span><br></pre></td></tr></table></figure>
+<p>项目 Profiling 中的 <code>aiv_mte2_time</code>、<code>aiv_mte3_time</code> 分别用于观察输入和输出搬运耗时。</p>
+<h3 id="4-tpipe-tque-与-tbuf"><a class="markdownIt-Anchor" href="#4-tpipe-tque-与-tbuf"></a> 4. TPipe、TQue 与 TBuf</h3>
+<p>TPipe、TQue 和 TBuf 是 Ascend C 用来管理片上内存与流水关系的软件抽象，不是与 MTE、Vector 并列的独立硬件单元。</p>
+<h4 id="tpipe"><a class="markdownIt-Anchor" href="#tpipe"></a> TPipe</h4>
+<p>TPipe 负责统一初始化和管理 Kernel 使用的 Queue、Buffer 以及相关流水同步资源。例如：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TPipe pipe;</span><br><span class="line">pipe.<span class="built_in">InitBuffer</span>(input_queue, <span class="number">2</span>, input_bytes);</span><br><span class="line">pipe.<span class="built_in">InitBuffer</span>(temp_buffer, temp_bytes);</span><br></pre></td></tr></table></figure>
+<p>其作用相当于当前 AI Core Kernel 的片上资源管理器。</p>
+<h4 id="tque带生产者消费者同步的缓冲队列"><a class="markdownIt-Anchor" href="#tque带生产者消费者同步的缓冲队列"></a> TQue：带生产者—消费者同步的缓冲队列</h4>
+<p>TQue 通常放在不同流水阶段之间：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GM --MTE2--&gt; VECIN TQue --Vector--&gt; VECOUT TQue --MTE3--&gt; GM</span><br></pre></td></tr></table></figure>
+<p>标准生命周期：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> local = input_queue.<span class="built_in">AllocTensor</span>&lt;<span class="type">float</span>&gt;(); <span class="comment">// 取得一个空槽</span></span><br><span class="line"><span class="built_in">DataCopy</span>(local, global, size);                 <span class="comment">// 真正执行 GM→UB 搬运</span></span><br><span class="line">input_queue.<span class="built_in">EnQue</span>(local);                      <span class="comment">// 宣布数据已经准备好</span></span><br><span class="line"></span><br><span class="line">local = input_queue.<span class="built_in">DeQue</span>&lt;<span class="type">float</span>&gt;();            <span class="comment">// 计算阶段取得就绪数据</span></span><br><span class="line"><span class="built_in">Compute</span>(..., local, size);</span><br><span class="line">input_queue.<span class="built_in">FreeTensor</span>(local);                 <span class="comment">// 允许槽位复用</span></span><br></pre></td></tr></table></figure>
+<p>各操作的准确含义：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AllocTensor</td>
+<td>从 Queue 中取得一个空缓冲槽，不执行数据搬运</td>
+</tr>
+<tr>
+<td>DataCopy</td>
+<td>真正执行 GM/UB 之间的数据搬运</td>
+</tr>
+<tr>
+<td>EnQue</td>
+<td>生产者宣布该槽数据就绪</td>
+</tr>
+<tr>
+<td>DeQue</td>
+<td>消费者等待并取得一块就绪数据</td>
+</tr>
+<tr>
+<td>FreeTensor</td>
+<td>使用完成，槽位可以被后续 Tile 复用</td>
+</tr>
+</tbody>
+</table>
+<p>输入队列常使用 TPosition::VECIN，输出队列常使用 TPosition::VECOUT。当 Queue 初始化多个缓冲槽时，可以形成 Double Buffer：MTE2 搬入下一块的同时，Vector 计算当前块。</p>
+<h4 id="tbuf固定临时工作区"><a class="markdownIt-Anchor" href="#tbuf固定临时工作区"></a> TBuf：固定临时工作区</h4>
+<p>TBuf 是一块直接使用的片上 Buffer，通常位于 TPosition::VECCALC：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TBuf&lt;TPosition::VECCALC&gt; temp_buffer;</span><br><span class="line">pipe.<span class="built_in">InitBuffer</span>(temp_buffer, temp_bytes);</span><br><span class="line">LocalTensor&lt;<span class="type">float</span>&gt; tmp = temp_buffer.<span class="built_in">Get</span>&lt;<span class="type">float</span>&gt;();</span><br></pre></td></tr></table></figure>
+<p>它一般用于：</p>
+<ul>
+<li>Reduce 的临时累加结果；</li>
+<li>Broadcast、Transpose 的工作空间；</li>
+<li>Cast 或复杂 Vector API 的中间结果；</li>
+<li>只在 Compute 阶段内部使用的局部数据。</li>
+</ul>
+<p>TBuf 没有 EnQue/DeQue 队列交接语义，通常初始化后通过 Get<T>() 取得内存视图。</p>
+<h4 id="tque-与-tbuf-对比"><a class="markdownIt-Anchor" href="#tque-与-tbuf-对比"></a> TQue 与 TBuf 对比</h4>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>TQue</th>
+<th>TBuf</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本质</td>
+<td>带状态和同步语义的缓冲队列</td>
+<td>固定临时缓冲区</td>
+</tr>
+<tr>
+<td>常见位置</td>
+<td>VECIN、VECOUT</td>
+<td>VECCALC</td>
+</tr>
+<tr>
+<td>获取方式</td>
+<td>AllocTensor、DeQue</td>
+<td>Get<T>()</td>
+</tr>
+<tr>
+<td>状态操作</td>
+<td>EnQue、DeQue、FreeTensor</td>
+<td>通常没有队列状态操作</td>
+</tr>
+<tr>
+<td>主要用途</td>
+<td>CopyIn/Compute/CopyOut 流水之间交接数据</td>
+<td>Compute 阶段内部临时空间</td>
+</tr>
+<tr>
+<td>Double Buffer</td>
+<td>常见</td>
+<td>通常不作为队列式双缓冲使用</td>
+</tr>
+</tbody>
+</table>
+<p>职责划分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">需要在流水阶段之间“交接数据” → TQue</span><br><span class="line">只需要一块计算临时工作区       → TBuf</span><br></pre></td></tr></table></figure>
+<p>AutoFuse 的 Schedule 和内存规划会决定 LocalTensor 放入 Queue 还是 Buffer，CodeGen 再生成对应的 TQue、TBuf、AllocTensor/Get、EnQue/DeQue 等 Ascend C 代码。</p>
+<h3 id="5-vector-cube-scalar"><a class="markdownIt-Anchor" href="#5-vector-cube-scalar"></a> 5. Vector、Cube、Scalar</h3>
+<h4 id="vector-单元"><a class="markdownIt-Anchor" href="#vector-单元"></a> Vector 单元</h4>
+<p>Vector 单元擅长并行处理大量元素级计算，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Add、Sub、Mul、Abs、Exp、Compare、Cast、Reduce</span><br></pre></td></tr></table></figure>
+<p>AutoFuse 当前重点覆盖大量 Vector 融合场景。</p>
+<h4 id="cube-单元"><a class="markdownIt-Anchor" href="#cube-单元"></a> Cube 单元</h4>
+<p>Cube 单元擅长矩阵/张量块计算，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MatMul、Conv、Cube 类计算</span><br></pre></td></tr></table></figure>
+<p>Cube 计算通常还涉及 L1、L0A、L0B、L0C 等更靠近矩阵计算单元的片上存储。AutoFuse 的 <code>v35</code>、Cube API 和 CV Fusion 相关代码会处理这类场景。</p>
+<h4 id="scalar-单元"><a class="markdownIt-Anchor" href="#scalar-单元"></a> Scalar 单元</h4>
+<p>Scalar 单元主要处理：</p>
+<ul>
+<li>循环控制；</li>
+<li>地址计算；</li>
+<li>Tiling 参数读取；</li>
+<li>分支和标量初始化。</li>
+</ul>
+<p>SuperKernel 的 Early-Start 会利用“前序 Kernel 末尾的 MTE 搬运”和“后序 Kernel 开始阶段的 Scalar 初始化”属于不同执行单元这一特点，实现部分重叠。</p>
+<h3 id="6-片上存储补充"><a class="markdownIt-Anchor" href="#6-片上存储补充"></a> 6. 片上存储补充</h3>
+<table>
+<thead>
+<tr>
+<th>存储</th>
+<th>技术作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Cube 数据进入更底层计算缓冲区前的片上缓存/暂存空间</td>
+</tr>
+<tr>
+<td>L0A/L0B</td>
+<td>Cube 计算的左右输入矩阵缓冲区</td>
+</tr>
+<tr>
+<td>L0C</td>
+<td>Cube 计算结果/累加缓冲区</td>
+</tr>
+<tr>
+<td>UB</td>
+<td>Vector 侧主要片上数据和临时结果存储</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>多个核共享的较大缓存层，位于 AI Core 与 GM 之间</td>
+</tr>
+<tr>
+<td>GM</td>
+<td>Device 全局内存</td>
+</tr>
+</tbody>
+</table>
+<p>AutoFuse 的 Vector 数据通路主要表现为 GM → UB → Vector → UB → GM。</p>
 <hr />
-<h2 id="七-总结ai-革命的基石"><a class="markdownIt-Anchor" href="#七-总结ai-革命的基石"></a> 七、总结：AI 革命的基石</h2>
-<p>Transformer 以<strong>自注意力机制</strong>为核心，彻底颠覆了传统序列建模范式，不仅解决了 RNN/LSTM 的固有缺陷，更为 AI 技术发展开辟了新方向。它是现代大语言模型的&quot;通用骨架&quot;，支撑起 GPT、BERT 等里程碑式模型，推动 AI 从&quot;感知&quot;向&quot;认知&quot;跨越，成为自然语言处理乃至人工智能领域的基础架构。</p>
-<p>随着技术演进，Transformer 不断优化（如稀疏注意力、混合专家模型等），在保持核心优势的同时降低计算成本，持续拓展 AI 应用边界。</p>
+<h2 id="四-单个-vector-tile-的执行流程"><a class="markdownIt-Anchor" href="#四-单个-vector-tile-的执行流程"></a> 四、单个 Vector Tile 的执行流程</h2>
+<p>一个普通 Vector Tile 的 Host 与 Device 执行过程如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Host：根据 Shape 和 UB 容量计算 TilingData</span><br><span class="line">  ↓ Kernel Launch</span><br><span class="line">AI Core：</span><br><span class="line">  1. TPipe 初始化 TQue/TBuf</span><br><span class="line">  2. TQue.AllocTensor 取得输入槽位</span><br><span class="line">  3. MTE2/DataCopy 将输入从 GM 搬到 UB</span><br><span class="line">  4. TQue.EnQue/DeQue 完成流水交接</span><br><span class="line">  5. Vector 使用 LocalTensor 计算，必要时使用 TBuf 临时空间</span><br><span class="line">  6. 结果进入 VECOUT TQue</span><br><span class="line">  7. MTE3/DataCopy 将最终结果从 UB 搬回 GM</span><br><span class="line">  8. FreeTensor 释放槽位供下一个 Tile 复用</span><br></pre></td></tr></table></figure>
+<p>职责边界：</p>
+<ul>
+<li>TQue/TBuf 管理的是片上内存和生命周期，本身不是计算单元。</li>
+<li>EnQue/DeQue 表达就绪与消费关系，本身不是数据搬运。</li>
+<li>DataCopy 才对应实际搬运；Add/Abs/Reduce 等 API 才对应实际计算。</li>
+<li>Double Buffer 的价值是让不同 Tile 的搬入、计算和搬出尽量重叠。</li>
+</ul>
+<p>轴选择、Tile Split、Block Split、分核和 Reduce 模板选择属于建立在该数据通路之上的调度机制。</p>
 <hr />
+<h2 id="五-基础技术要点"><a class="markdownIt-Anchor" href="#五-基础技术要点"></a> 五、基础技术要点</h2>
+<ol>
+<li>Host 负责构图、编译、Tiling 和下发，Device 负责执行 Kernel。</li>
+<li>Tensor 由 Shape、Rank、DType、Layout 和 Stride 描述；Stride 决定坐标怎样映射到内存地址。</li>
+<li>完整数据通常位于 GM，Tile 通过 MTE2 搬入 UB，经 Vector/Cube 计算后再由 MTE3 写回 GM。</li>
+<li>Tiling 决定切块、分核、尾块和片上资源使用方式，TilingData 将 Host 决策传给 Kernel。</li>
+<li>TPipe 管理 Kernel 的片上 Queue/Buffer；TQue 负责流水交接与缓冲槽复用；TBuf 负责计算阶段临时空间。</li>
+<li>TQue 的 AllocTensor/EnQue/DeQue/FreeTensor 是生命周期与同步操作，DataCopy 才是真正搬运。</li>
+<li>AutoFuse 重新生成融合 Kernel，重点减少中间 GM 搬运；SuperKernel 组合已有 Kernel，重点减少下发与同步开销。</li>
+<li>轴分类、融合判定、Schedule 和 Reduce 模板构成 AutoFuse 的上层调度机制，不属于基础数据通路本身。</li>
+</ol>
 </article>
 
 
-<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2026/07/23/llm_study2/">PyTorch 从模型训推到底层优化简介</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2026/06/07/RocketMq/">RocketMQ 知识点整理</a></div></section></div>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2026/07/23/llm_study2/">PyTorch 从模型训推到底层优化简介</a></div></section></div>
 
 
 
@@ -326,7 +549,7 @@ c. 原论文使用 8 个注意力头，总维度 <span class="katex"><span class
 
 
 
-<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><button type="button" class="cap-action" aria-label="折叠或展开目录" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E6%A0%B8%E5%BF%83%E5%AE%9A%E4%BD%8D%E4%B8%8E%E8%B5%B7%E6%BA%90"><span class="toc-text"> 一、核心定位与起源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E7%BC%96%E7%A0%81%E5%99%A8-%E8%A7%A3%E7%A0%81%E5%99%A8%E6%A1%86%E6%9E%B6"><span class="toc-text"> 二、整体架构：编码器-解码器框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-%E7%BC%96%E7%A0%81%E5%99%A8-encoder%E8%BE%93%E5%85%A5%E7%90%86%E8%A7%A3%E6%A8%A1%E5%9D%97"><span class="toc-text"> 2.1 编码器 (Encoder)：输入理解模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#22-%E8%A7%A3%E7%A0%81%E5%99%A8-decoder%E8%BE%93%E5%87%BA%E7%94%9F%E6%88%90%E6%A8%A1%E5%9D%97"><span class="toc-text"> 2.2 解码器 (Decoder)：输出生成模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#23-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%A4%84%E7%90%86"><span class="toc-text"> 2.3 输入输出处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%B8%8E%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B"><span class="toc-text"> 三、核心机制：自注意力与多头注意力</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#31-%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B-self-attention%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%81%B5%E9%AD%82"><span class="toc-text"> 3.1 自注意力 (Self-Attention)：模型的&quot;灵魂&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#32-%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B-multi-head-attention%E5%A4%9A%E8%A7%92%E5%BA%A6%E7%89%B9%E5%BE%81%E6%8D%95%E6%8D%89"><span class="toc-text"> 3.2 多头注意力 (Multi-Head Attention)：多角度特征捕捉</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E4%BB%A5%E6%9C%BA%E5%99%A8%E7%BF%BB%E8%AF%91%E4%B8%BA%E4%BE%8B"><span class="toc-text"> 四、工作流程：以机器翻译为例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E6%A0%B8%E5%BF%83%E4%BC%98%E5%8A%BF%E8%B6%85%E8%B6%8A%E4%BC%A0%E7%BB%9F%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-text"> 五、核心优势：超越传统模型的关键特性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD-%E5%8F%98%E4%BD%93%E4%B8%8E%E5%BA%94%E7%94%A8%E4%BB%8E-nlp-%E5%88%B0%E5%A4%9A%E6%A8%A1%E6%80%81"><span class="toc-text"> 六、变体与应用：从 NLP 到多模态</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#61-%E4%B8%89%E5%A4%A7%E4%B8%BB%E6%B5%81%E5%8F%98%E4%BD%93"><span class="toc-text"> 6.1 三大主流变体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#62-%E8%B7%A8%E9%A2%86%E5%9F%9F%E5%BA%94%E7%94%A8"><span class="toc-text"> 6.2 跨领域应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83-%E6%80%BB%E7%BB%93ai-%E9%9D%A9%E5%91%BD%E7%9A%84%E5%9F%BA%E7%9F%B3"><span class="toc-text"> 七、总结：AI 革命的基石</span></a></li></ol></div><div class="widget-footer"><button type="button" class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></button><button type="button" class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></button></div></widget>
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><button type="button" class="cap-action" aria-label="折叠或展开目录" onclick="sidebar.toggleTOC()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E9%A1%B9%E7%9B%AE%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%86%85%E5%AE%B9%E8%8C%83%E5%9B%B4"><span class="toc-text"> 一、项目定位与内容范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E5%9F%BA%E7%A1%80%E5%90%8D%E8%AF%8D"><span class="toc-text"> 二、基础名词</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-host-device-%E4%B8%8E-runtime"><span class="toc-text"> 1. Host、Device 与 Runtime</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-tensor-shape-rank-dimension-batch"><span class="toc-text"> 2. Tensor、Shape、Rank、Dimension、Batch</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#tensor"><span class="toc-text"> Tensor</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#shape"><span class="toc-text"> Shape</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rank"><span class="toc-text"> Rank</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dimensiondim"><span class="toc-text"> Dimension&#x2F;Dim</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#batch"><span class="toc-text"> Batch</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dtype"><span class="toc-text"> DType</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#layout-stride"><span class="toc-text"> Layout、Stride</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-operator-kernel-%E4%B8%8E%E8%AE%A1%E7%AE%97%E5%9B%BE"><span class="toc-text"> 3. Operator、Kernel 与计算图</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#operator%E7%AE%97%E5%AD%90"><span class="toc-text"> Operator&#x2F;算子</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#kernel"><span class="toc-text"> Kernel</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%9B%BE"><span class="toc-text"> 计算图</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-tile-tiling-block"><span class="toc-text"> 4. Tile、Tiling、Block</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#tile"><span class="toc-text"> Tile</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tiling"><span class="toc-text"> Tiling</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tiling-data"><span class="toc-text"> Tiling Data</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#block"><span class="toc-text"> Block</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tile-split-%E4%B8%8E-block-split"><span class="toc-text"> Tile Split 与 Block Split</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-pipeline-%E4%B8%8E-double-buffer"><span class="toc-text"> 5. Pipeline 与 Double Buffer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E6%98%87%E8%85%BE%E7%A1%AC%E4%BB%B6%E5%92%8C%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83"><span class="toc-text"> 三、昇腾硬件和存储单元</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-ai-core-aic-aiv"><span class="toc-text"> 1. AI Core、AIC、AIV</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-gm-%E4%B8%8E-ub"><span class="toc-text"> 2. GM 与 UB</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#gmglobal-memory"><span class="toc-text"> GM：Global Memory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ubunified-buffer"><span class="toc-text"> UB：Unified Buffer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-mte2-%E4%B8%8E-mte3"><span class="toc-text"> 3. MTE2 与 MTE3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-tpipe-tque-%E4%B8%8E-tbuf"><span class="toc-text"> 4. TPipe、TQue 与 TBuf</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#tpipe"><span class="toc-text"> TPipe</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tque%E5%B8%A6%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E5%90%8C%E6%AD%A5%E7%9A%84%E7%BC%93%E5%86%B2%E9%98%9F%E5%88%97"><span class="toc-text"> TQue：带生产者—消费者同步的缓冲队列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tbuf%E5%9B%BA%E5%AE%9A%E4%B8%B4%E6%97%B6%E5%B7%A5%E4%BD%9C%E5%8C%BA"><span class="toc-text"> TBuf：固定临时工作区</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tque-%E4%B8%8E-tbuf-%E5%AF%B9%E6%AF%94"><span class="toc-text"> TQue 与 TBuf 对比</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-vector-cube-scalar"><span class="toc-text"> 5. Vector、Cube、Scalar</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#vector-%E5%8D%95%E5%85%83"><span class="toc-text"> Vector 单元</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cube-%E5%8D%95%E5%85%83"><span class="toc-text"> Cube 单元</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#scalar-%E5%8D%95%E5%85%83"><span class="toc-text"> Scalar 单元</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E7%89%87%E4%B8%8A%E5%AD%98%E5%82%A8%E8%A1%A5%E5%85%85"><span class="toc-text"> 6. 片上存储补充</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%8D%95%E4%B8%AA-vector-tile-%E7%9A%84%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-text"> 四、单个 Vector Tile 的执行流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF%E8%A6%81%E7%82%B9"><span class="toc-text"> 五、基础技术要点</span></a></li></ol></div><div class="widget-footer"><button type="button" class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/><path d="M7 3.338A9.95 9.95 0 0 1 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12c0-1.821.487-3.53 1.338-5"/></g></svg><span>回到顶部</span></button><button type="button" class="buttom" onclick="util.scrollComment()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M8 10.5h8M8 14h5.5M17 3.338A9.95 9.95 0 0 0 12 2C6.477 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453c.178.356.237.763.134 1.148l-.595 2.226a1.3 1.3 0 0 0 1.591 1.592l2.226-.596a1.63 1.63 0 0 1 1.149.133A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10c0-1.821-.487-3.53-1.338-5"/></svg><span>参与讨论</span></button></div></widget>
 </div></aside><div class='float-panel'>
   <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' aria-label='打开文章目录' aria-controls='rightbar' aria-expanded='false' onclick='sidebar.rightbar()'>
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
@@ -340,7 +563,7 @@ c. 原论文使用 8 个注意力头，总维度 <span class="katex"><span class
 
 <script type="text/javascript">
   window.canonical = {"closeEnable":true,"closeText":"关闭提示","originalHost":"yulin-bi.github.io","officialHosts":["localhost"],"encoded":"eXVsaW4tYmkuZ2l0aHViLmlv"};
-  window.canonical["param"] = {"permalink":"https://yulin-bi.github.io/2026/07/18/llm_study1/","checklink":"/js/plugins/video.js"};
+  window.canonical["param"] = {"permalink":"https://yulin-bi.github.io/2026/07/23/cann_study1/","checklink":"/js/plugins/video.js"};
   // Fix: Ensure page is at the correct top position on data load
   if (history.scrollRestoration) {
     history.scrollRestoration = 'auto';
@@ -1225,8 +1448,7 @@ c. 原论文使用 8 个注意力头，总维度 <span class="katex"><span class
     hoverDelay: 25
   };
 </script>
-<script defer src="https://gcore.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.23/dist/katex.min.css" integrity="sha384-//SZkxyB7axjCAopkAL1E1rve+ZSPKapD89Lo/lLhcsXR+zOYl5z6zJZEFXil+q0" crossorigin="anonymous">
-<script>
+<script defer src="https://gcore.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script>
   utils.initPlugin(() => {
     const codeElements = document.querySelectorAll('.code');
     if (codeElements.length > 0) {

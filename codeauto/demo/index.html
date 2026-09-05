@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="CodeAuto 只读项目快照演示">
+  <title>CodeAuto · 只读 Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="demo-banner">
+    <span class="demo-dot"></span>
+    公开快照 · 所有数据均已脱敏 · 不连接模型或本地环境
+  </div>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="返回 CodeAuto 介绍页">
+      <span class="brand-mark">✦</span>
+      <span><strong>CodeAuto</strong><small>Java Agent Workspace</small></span>
+    </a>
+    <div class="top-actions">
+      <span class="readonly-pill">只读演示</span>
+      <a href="../">返回介绍页</a>
+    </div>
+  </header>
+
+  <main class="workspace-shell">
+    <aside class="left-panel">
+      <div class="panel-label">演示项目</div>
+      <div class="project-card">
+        <span class="folder-icon">⌁</span>
+        <span><b id="project-name">测试工程</b><small id="workspace-name">DEMO_WORKSPACE</small></span>
+      </div>
+      <div class="panel-heading"><span>会话</span><small>1</small></div>
+      <button class="session-card active" type="button">
+        <span class="session-branch"></span>
+        <span><b id="session-name">CodeAuto 设计问题复盘</b><small><i></i> 快照已完成</small></span>
+      </button>
+      <div class="snapshot-note">
+        <b>Snapshot / 01</b>
+        <p>从真实项目的 <code>.codeauto</code> 记录导出，仅保留展示所需的数据。</p>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <header class="session-header">
+        <div>
+          <span class="eyebrow">当前会话 / MAIN</span>
+          <h1 id="main-title">CodeAuto 设计问题复盘</h1>
+        </div>
+        <div class="session-status"><span></span>运行记录</div>
+      </header>
+      <nav class="view-tabs" aria-label="演示视图">
+        <button class="active" data-view="chat">对话</button>
+        <button data-view="trace">工具轨迹</button>
+        <button data-view="evaluation">运行评估</button>
+      </nav>
+      <div class="view-stage">
+        <section id="chat-view" class="view active" aria-live="polite"></section>
+        <section id="trace-view" class="view"></section>
+        <section id="evaluation-view" class="view"></section>
+      </div>
+      <div class="readonly-composer">
+        <span>这是只读快照，无法发送消息或执行工具</span>
+        <button type="button" disabled>发送</button>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <nav class="rail-tabs" aria-label="项目详情">
+        <button class="active" data-rail="overview">概览</button>
+        <button data-rail="files">文件</button>
+        <button data-rail="memory">经验</button>
+      </nav>
+      <section id="overview-rail" class="rail-view active"></section>
+      <section id="files-rail" class="rail-view"></section>
+      <section id="memory-rail" class="rail-view"></section>
+    </aside>
+  </main>
+
+  <dialog id="detail-dialog">
+    <form method="dialog"><button class="dialog-close" aria-label="关闭">×</button></form>
+    <div id="dialog-content"></div>
+  </dialog>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

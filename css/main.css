@@ -1,10 +1,10 @@
 :root {
-  --width-main: 720px;
+  --width-main: 820px;
   --fsp: 17px;
   --fsh2: calc(var(--fsp) + 11px);
   --fsh3: calc(var(--fsp) + 7px);
   --fsh4: calc(var(--fsp) + 4px);
-  --side-content-width: 224px;
+  --side-content-width: 208px;
   --gap-margin: 16px;
   --gap-padding: 16px;
   --gap-p: calc(17px + 4px);
@@ -12,12 +12,12 @@
 }
 @media screen and (min-width: 2048px) {
   :root {
-    --width-main: 780px;
+    --width-main: 920px;
   }
 }
 @media screen and (min-width: 2560px) {
   :root {
-    --width-main: 860px;
+    --width-main: 1040px;
   }
 }
 @media screen and (max-width: 768px) {
@@ -9401,7 +9401,13 @@ details.toc[open] >div.body section .header+.doc_tree {
   height: 100%;
   overflow: visible;
 }
-@media screen and (max-width: 1180px) {
+@media screen and (min-width: 1440px) {
+  .l_body .l_left,
+  .l_body .l_right {
+    justify-self: center;
+  }
+}
+@media screen and (max-width: 1400px) {
   .l_body .l_right {
     --gap-margin: 16px;
   }

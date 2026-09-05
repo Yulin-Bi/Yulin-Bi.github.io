@@ -138,7 +138,7 @@
     function replyAbout(appendUserMessage) {
       if (appendUserMessage !== false) appendMessage('user', '介绍一下你自己');
       scheduleMessage(() => appendMessage('bot', '你好，我是毕钰林。这里是我的个人博客，用来记录学习、技术实践，也会分享生活中的见闻与思考。'), 180);
-      scheduleMessage(() => appendMessage('bot', '技术方面，我主要关注 Java 后端、AI Agent、RAG 和工程化实践，并持续把项目经验整理成可以复用的内容。'), 420);
+      scheduleMessage(() => appendMessage('bot', '技术方面，我主要关注 Java 后端、AI Agent、RAG 和工程化实践，并持续把项目经验整理成可以复用的内容。目前在华为海思从事 AI Infra，不断拓展能力边界。'), 420);
       scheduleMessage(() => appendLinkedMessage('如果你想了解更完整的教育经历、项目经历和技术栈，可以查看我的个人简历。', '查看个人简历', '/resume/', false), 680);
     }
 

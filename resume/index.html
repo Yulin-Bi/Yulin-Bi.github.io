@@ -169,6 +169,43 @@
     margin: 16px 0;
   }
 
+  .experience-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    row-gap: 3px;
+    margin-bottom: 12px;
+  }
+  .experience-heading h3 {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 17px;
+    font-weight: 650;
+    color: var(--text-primary);
+  }
+  .experience-role {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .experience-date {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .content-label {
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--text-primary);
+    margin-top: 10px;
+  }
+
   .project-item {
     margin-bottom: 22px;
   }
@@ -245,6 +282,11 @@
     margin: 20px 0;
   }
 
+  .metric {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
   .skills-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -276,7 +318,73 @@
     .skills-grid { grid-template-columns: 1fr; }
     .edu-item { flex-direction: column; gap: 4px; }
     .edu-meta { text-align: left; }
+    .experience-heading {
+      grid-template-columns: 1fr;
+      gap: 3px;
+    }
+    .experience-heading h3,
+    .experience-role,
+    .experience-date {
+      grid-column: 1;
+      grid-row: auto;
+    }
+    .experience-date {
+      margin-top: 2px;
+      text-align: left;
+    }
+    .project-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+    }
     .glass-card { padding: 20px; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 12mm; }
+    body {
+      display: block;
+      padding: 0;
+      background: #fff;
+      color: #111;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body::before,
+    body::after { display: none; }
+    .resume {
+      max-width: none;
+      gap: 10px;
+    }
+    .glass-card {
+      padding: 16px 18px;
+      background: #fff;
+      border: 1px solid #d9d9dd;
+      border-radius: 10px;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      break-inside: auto;
+    }
+    .glass-card:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .header-card {
+      padding: 18px 20px;
+      break-inside: avoid;
+    }
+    .competition-card,
+    .edu-item { break-inside: avoid; }
+    .project-duties li { break-inside: avoid; }
+    .section-title {
+      margin-bottom: 12px;
+      break-after: avoid;
+    }
+    .experience-heading,
+    .content-label { break-after: avoid; }
+    .project-desc,
+    .project-duties li { line-height: 1.5; }
   }
 </style>
 </head>
@@ -310,7 +418,7 @@
       <div class="edu-main">
         <h3>南京理工大学 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary)">211 · 双一流</span></h3>
         <div class="edu-school">通信工程（硕士）</div>
-        <div class="edu-detail">平均分 85.8 · 校二等奖学金 2 次</div>
+        <div class="edu-detail">平均分 85.8 · 校二等奖学金 2 次 · 华为 CANN 算子挑战赛第 3 名（省级）</div>
       </div>
       <div class="edu-meta">2024.09 - 2027.06</div>
     </div>
@@ -321,15 +429,74 @@
       <div class="edu-main">
         <h3>天津工业大学 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary)">双一流</span></h3>
         <div class="edu-school">通信工程（本科）</div>
-        <div class="edu-detail">GPA 3.72/4.0 · 专业排名前 9% · 国家励志奖学金 2 次 · 校二等奖学金 3 次 · 校优秀毕业生 · 校三好学生</div>
+        <div class="edu-detail">GPA 3.72/4.0 · 专业排名前 9% · 国家励志奖学金 2 次 · 校二等奖学金 3 次 · 校优秀毕业生 · 优秀学生干部</div>
       </div>
       <div class="edu-meta">2020.09 - 2024.06</div>
     </div>
   </div>
 
+  <!-- 实习经历 -->
+  <div class="glass-card">
+    <div class="section-title">实习经历</div>
+    <div class="experience-heading">
+      <h3>华为 · 海思图灵业务部</h3>
+      <span class="experience-role">AI 算法及应用 / Infra</span>
+      <span class="experience-date">2026.07 - 至今</span>
+    </div>
+    <div class="content-label">个人职责</div>
+    <ul class="project-duties">
+      <li><span class="metric">问题定位与验证体系沉淀：</span>搭建 TF ATC/OM、PyTorch AOT + Inductor + AscendC Backend 测试链路，沉淀最小复现、A/B 对照、Kernel 分析、Profiling 及回归验证方法，可复用于自动融合精度与性能问题。</li>
+      <li><span class="metric">DeepSeek V4 训练精度问题修复：</span>定位并修复整网训练 grad_norm = NaN，通过最小复现、版本 A/B、Kernel Diff 和日志分析，确认根因为 Pad 后对齐元数据未重推导致物理布局与元数据不一致，并优化对齐推导逻辑完成整网回归。</li>
+      <li><span class="metric">Broadcast 缓存前移优化：</span>A3 场景下针对 Broadcast 完整展开结果长期占用 UB 的问题，将缓存由展开大张量前移至紧凑源张量，降低 UB 占用并优化 ATT tiling 选择；典型场景整体性能提升约 <span class="metric">18%</span>，关键 Case 性能提升 <span class="metric">52%～54%</span>。</li>
+    </ul>
+  </div>
+
+  <!-- 比赛经历 -->
+  <div class="glass-card competition-card">
+    <div class="section-title">比赛经历</div>
+    <div class="experience-heading">
+      <h3>华为 CANN 算子挑战赛</h3>
+      <span class="experience-role">任务规划 / 算子优化</span>
+      <span class="experience-date">2026.04 - 2026.06</span>
+    </div>
+    <p class="project-desc">比赛分为初赛、决赛两个阶段，优化题目分别为 Erf 算子和 BatchToSpace 算子。作为队长负责整体技术方案设计、单算子优化框架搭建以及关键泛化场景优化。</p>
+    <div class="content-label">个人职责</div>
+    <ul class="project-duties">
+      <li>针对 Erf 计算密集、原生数学指令开销较高的问题，在满足比赛精度要求的前提下，根据输入区间设计分段近似算法，并结合多项式计算与边界处理减少高开销指令，显著提升算子执行性能。</li>
+      <li>围绕 BatchToSpace 的访存密集特性，结合输入规模布局特征设计泛化 Tiling 策略；通过优化多核任务划分、UB 利用及尾块处理，减少非连续搬运，提升不同 Shape 场景下的整体性能。</li>
+      <li>针对单算子 Host + Kernel 调用通用框架，通过精简 TilingData、限制参数结构体大小、减少 Host 侧冗余计算与数据拷贝，降低 Tiling 及 Kernel 启动固定开销，使 us 级别小 Shape 场景耗时降低约 <span class="metric">30%</span>。</li>
+    </ul>
+  </div>
+
   <!-- 项目经历 -->
   <div class="glass-card">
     <div class="section-title">项目经历</div>
+
+    <div class="project-item">
+      <div class="project-header">
+        <h3>CodeAuto：自动编程助手</h3>
+        <span class="project-date">2026.05 - 至今</span>
+      </div>
+      <div class="project-header" style="margin-top:2px">
+        <span class="project-role">Agent 应用开发</span>
+      </div>
+      <p class="project-desc">CodeAuto 是基于 Java 构建的 AI 编程助手，支持 Agent Loop、Tool Use、TodoWrite、Skills、MCP、多层记忆持久化与动态上下文压缩，通过 Harness 工程构建其安全、稳定的运行框架。</p>
+      <div class="project-tech">
+        <span class="tech-tag">Java</span>
+        <span class="tech-tag">Agent Loop</span>
+        <span class="tech-tag">MCP</span>
+        <span class="tech-tag">Harness</span>
+        <span class="tech-tag">上下文压缩</span>
+      </div>
+      <ul class="project-duties">
+        <li>针对长对话场景下上下文膨胀导致 Token 成本提升、模型响应质量下降的问题，设计微压缩、全量压缩动态策略。</li>
+        <li>基于 Reflexion 与 ACE 范式，搭建“反思 → 抽取教训 → 引用反馈”机制，使 Agent 具备从历史错误中持续优化的能力。</li>
+        <li>设计多层记忆架构，通过用户画像全量注入、项目指令分层叠加、经验教训按需检索三级模型，实现跨会话知识复用。</li>
+        <li>使用 CodeAuto + deepseek-v4-pro 开发模拟面试平台，上下文缓存命中率达 <span class="metric">95%</span>，通过实战不断优化 Harness 框架。</li>
+      </ul>
+    </div>
+
+    <div class="project-divider"></div>
 
     <div class="project-item">
       <div class="project-header">
@@ -385,32 +552,6 @@
       </ul>
     </div>
 
-    <div class="project-divider"></div>
-
-    <div class="project-item">
-      <div class="project-header">
-        <h3>CodeAuto：自动编程助手</h3>
-        <span class="project-date">2026.05 - 至今</span>
-      </div>
-      <div class="project-header" style="margin-top:2px">
-        <span class="project-role">Agent 应用开发</span>
-      </div>
-      <p class="project-desc">CodeAuto 是基于 Java 构建的 AI 编程助手，支持 Agent Loop、Tool Use、TodoWrite、Skills、MCP、多层记忆持久化与动态上下文压缩，是通过 Vibed Coding 从零构建的、无第三方框架依赖的 AI 协作工具。</p>
-      <div class="project-tech">
-        <span class="tech-tag">Java</span>
-        <span class="tech-tag">Agent Loop</span>
-        <span class="tech-tag">MCP</span>
-        <span class="tech-tag">LLM</span>
-        <span class="tech-tag">上下文压缩</span>
-      </div>
-      <ul class="project-duties">
-        <li>针对无法跨会话积累用户偏好与项目知识的问题，设计多层记忆架构，用户偏好恢复命中率达 90%+。</li>
-        <li>针对长对话场景下上下文膨胀导致 Token 成本提升、模型响应质量下降的问题，设计动态上下文压缩策略。</li>
-        <li>基于 Reflexion 与 ACE 论文，拓展 Agent 自进化能力，在重复任务集测试中同类错误复发率下降 40%+。</li>
-        <li>针对 LLM 单轮对话无法完成多文件修改、编译验证等复杂任务的问题，设计 Agent 自循环工具调用架构。</li>
-        <li>使用 CodeAuto + deepseek-v4-pro 开发模拟面试平台，实战测试上下文缓存命中率达 95%，项目已开源并持续迭代。</li>
-      </ul>
-    </div>
   </div>
 
   <!-- 专业技能 -->
@@ -418,24 +559,20 @@
     <div class="section-title">专业技能</div>
     <div class="skills-grid">
       <div class="skill-cat">
-        <strong>数据库</strong>
-        <span>熟悉 MySQL、PostgreSQL，掌握索引、事务、锁、MVCC 等基础知识。</span>
+        <strong>AI 开发工具</strong>
+        <span>熟悉 Codex、Claude Code 等 AI Coding 工具及其底层原理，具备 AI 辅助开发与问题定位经验。</span>
       </div>
       <div class="skill-cat">
-        <strong>中间件</strong>
-        <span>熟悉 Redis 常用数据结构及缓存应用，了解 Redisson 分布式锁、Lua 脚本及 RocketMQ 的基本使用。</span>
+        <strong>工程开发</strong>
+        <span>具备 Java、Spring Boot 后端开发基础，熟悉 Git、Docker、Postman、JMeter 等开发与测试工具。</span>
       </div>
       <div class="skill-cat">
-        <strong>后端框架</strong>
-        <span>熟悉 Spring、Spring Boot、MyBatis 等主流后端开发框架，了解 IOC、AOP、事务管理等核心机制。</span>
+        <strong>数据与中间件</strong>
+        <span>熟悉 MySQL、PostgreSQL、Redis，了解索引、事务、缓存、分布式锁及 RocketMQ 等常用机制。</span>
       </div>
       <div class="skill-cat">
-        <strong>编程语言</strong>
-        <span>掌握 Java 基础，熟悉集合框架、多线程，了解线程池、锁、CAS、ThreadLocal 等常用并发编程机制。</span>
-      </div>
-      <div class="skill-cat" style="grid-column: 1 / -1;">
-        <strong>常用工具</strong>
-        <span>熟悉 Git、Postman、JMeter、Docker 等常用开发与测试工具；熟悉 Codex、Claude Code 等 AI Coding 工具。</span>
+        <strong>AI 全栈技术视野</strong>
+        <span>覆盖 Agent 应用、训推框架、图编译与算子优化，能够从上层业务需求贯通到底层性能实现。</span>
       </div>
     </div>
   </div>
@@ -444,10 +581,9 @@
   <div class="glass-card">
     <div class="section-title">自我评价</div>
     <ul class="project-duties" style="margin-top:0">
-      <li>热爱运动、兴趣广泛，例如跑步、摄影、唱歌。</li>
-      <li>有科研经验，可以对前沿论文进行复现，并加以改进，在投 IEEE 一篇。</li>
-      <li>有较强的自主学习能力，对新事物、新技术保持好奇与探索。</li>
-      <li>GitHub star 500+ 项目 MiniCode 贡献者。</li>
+      <li>有科研经验，可以对前沿论文进行复现，在投 IEEE Transactions 论文一篇。</li>
+      <li>身心健康，热爱运动，乐于助人，曾参与世界人工智能大会志愿者工作。</li>
+      <li>开源社区活跃，GitHub star 1000+ 项目 MiniCode 贡献者，CANN 生态 GE、Graph-autofusion 项目贡献者。</li>
     </ul>
   </div>
 

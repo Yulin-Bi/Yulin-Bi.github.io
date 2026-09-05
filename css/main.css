@@ -6943,6 +6943,13 @@ details.toc[open] >div.body section .header+.doc_tree {
   filter: unset;
   background: var(--bg-a100);
 }
+.social-wrap .social svg,
+.social-wrap .social img {
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
 .social-wrap .social img {
   border-radius: 2px;
 }
